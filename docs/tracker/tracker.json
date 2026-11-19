@@ -1,0 +1,808 @@
+{
+  "project": "Family Property Manager",
+  "updated": "2026-11-19 19:44 IST",
+  "statuses": [
+    "Not started",
+    "In progress",
+    "Blocked",
+    "Done",
+    "Verified"
+  ],
+  "current": {
+    "phase": 0,
+    "step": "Make the first git commit (waiting on Git author name and email).",
+    "comment": "Everything else in Phase 0 is built and checked. Phase 1 has no blockers and can start any time."
+  },
+  "next": [
+    "Owner sets Git author name and email, then make the first commit (task 0.7).",
+    "Start Phase 1: add Vitest and the money helpers (tasks 1.1–1.3).",
+    "Owner decides sign-in method and Blaze plan before Phase 2 (blockers B2, B3)."
+  ],
+  "criticalPath": [
+    0,
+    2,
+    3,
+    4,
+    5,
+    10,
+    11
+  ],
+  "phases": [
+    {
+      "id": 0,
+      "name": "Foundation",
+      "outcome": "Git repo, app shell, navigation, requirements and plan docs.",
+      "status": "In progress",
+      "dependsOn": [],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "Lint, build and browser check (desktop and phone sizes) passed on 2026-11-19.",
+      "tasks": [
+        {
+          "id": "0.1",
+          "title": "Carry over requirements from the Family Rent handoff (docs/REQUIREMENTS.md)",
+          "status": "Done",
+          "comment": ""
+        },
+        {
+          "id": "0.2",
+          "title": "Roadmap and architecture notes (docs/ROADMAP.md)",
+          "status": "Done",
+          "comment": ""
+        },
+        {
+          "id": "0.3",
+          "title": "Rewrite AGENTS.md and README.md for React + Firebase",
+          "status": "Done",
+          "comment": ""
+        },
+        {
+          "id": "0.4",
+          "title": "Initialise git repository and confirm .gitignore",
+          "status": "Done",
+          "comment": ".env.local, node_modules and dist are ignored."
+        },
+        {
+          "id": "0.5",
+          "title": "App shell: routing, sidebar, phone bottom bar, placeholder pages",
+          "status": "Verified",
+          "comment": "Checked in the browser at desktop and 375px phone width; no console errors."
+        },
+        {
+          "id": "0.6",
+          "title": "Build progress tracker (this document) with change log",
+          "status": "Done",
+          "comment": ""
+        },
+        {
+          "id": "0.7",
+          "title": "First git commit",
+          "status": "Blocked",
+          "comment": "All files staged. Blocked by B1 (Git author not set)."
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Money engine",
+      "outcome": "Pure JavaScript functions for every money rule, with automated tests. No Firebase.",
+      "status": "Not started",
+      "dependsOn": [
+        0
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "Can run in parallel with Phases 2 and 3.",
+      "tasks": [
+        {
+          "id": "1.1",
+          "title": "Add Vitest test runner",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.2",
+          "title": "Money helpers: integer paise, ₹ Indian formatting, half-up rounding",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.3",
+          "title": "Asia/Kolkata business date helpers",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.4",
+          "title": "Anniversary rent periods incl. 29/30/31 clamping and leap years",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.5",
+          "title": "Departure proration (leaving day included, half-up)",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.6",
+          "title": "Payment allocation: oldest first, credit, manual reallocation",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.7",
+          "title": "Adjustments target their own period (handoff concern #1)",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.8",
+          "title": "Building expense split incl. vacant flats, exact paise",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.9",
+          "title": "Primary profit and owner cash surplus formulas",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.10",
+          "title": "Expected rent split across calendar years to the paisa",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.11",
+          "title": "Openings never double-count with generated charges",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "1.12",
+          "title": "Submeter consumption with exact arithmetic, reset and override",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Sign-in and lockdown",
+      "outcome": "Family-only sign-in with admin/family roles enforced by Firestore rules.",
+      "status": "Not started",
+      "dependsOn": [
+        0
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "Needs decision B2 (sign-in method) before starting.",
+      "tasks": [
+        {
+          "id": "2.1",
+          "title": "Confirm sign-in method (Google recommended)",
+          "status": "Not started",
+          "comment": "Blocker B2."
+        },
+        {
+          "id": "2.2",
+          "title": "Firebase Auth sign-in and sign-out",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "2.3",
+          "title": "Allowlist with admin/family roles",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "2.4",
+          "title": "Route guard and 'not authorised' page",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "2.5",
+          "title": "Firestore security rules",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "2.6",
+          "title": "Rules tests in the Firebase emulator",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "2.7",
+          "title": "Audit log helper; append-only rule",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Buildings and flats",
+      "outcome": "Building → floor → flat setup with derived occupancy.",
+      "status": "Not started",
+      "dependsOn": [
+        2
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "",
+      "tasks": [
+        {
+          "id": "3.1",
+          "title": "Buildings: add/edit (admin only)",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "3.2",
+          "title": "Create the five initial buildings through the app",
+          "status": "Not started",
+          "comment": "Not as committed seed data."
+        },
+        {
+          "id": "3.3",
+          "title": "Flats: floor, position, friendly name, CA numbers",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "3.4",
+          "title": "Reject duplicate floor + position in a building",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "3.5",
+          "title": "Occupancy derived from tenancy dates",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "3.6",
+          "title": "Hierarchy view and search",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Tenants and tenancies",
+      "outcome": "Tenant records, move-in, departure with proration preview, history.",
+      "status": "Not started",
+      "dependsOn": [
+        1,
+        3
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "",
+      "tasks": [
+        {
+          "id": "4.1",
+          "title": "Tenant records: contacts, household, vehicles, notes",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "4.2",
+          "title": "Mask phone and ID numbers in lists",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "4.3",
+          "title": "Start tenancy with overlap check (transaction)",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "4.4",
+          "title": "Departure: proration preview and explicit adjustment",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "4.5",
+          "title": "Opening balances with first-period preview",
+          "status": "Not started",
+          "comment": "Handoff concern #2."
+        },
+        {
+          "id": "4.6",
+          "title": "Tenancy history per flat",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Collections",
+      "outcome": "Fast monthly rent collection with transparent allocation and credit.",
+      "status": "Not started",
+      "dependsOn": [
+        1,
+        4
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "",
+      "tasks": [
+        {
+          "id": "5.1",
+          "title": "Charge generation with deterministic IDs (no duplicates)",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "5.2",
+          "title": "Collections list for the month",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "5.3",
+          "title": "Quick 'full rent received' action",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "5.4",
+          "title": "Partial payment entry",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "5.5",
+          "title": "Allocation preview and manual reallocation",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "5.6",
+          "title": "Safe retries (no duplicate payment)",
+          "status": "Not started",
+          "comment": "Handoff concern #5."
+        },
+        {
+          "id": "5.7",
+          "title": "Stale-edit protection with versions",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "5.8",
+          "title": "Tenancy ledger view",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Electricity",
+      "outcome": "Own-meter bills and shared-meter submeter charges, kept separate from rent.",
+      "status": "Not started",
+      "dependsOn": [
+        1,
+        3,
+        4
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "Manual entry only in version 1.",
+      "tasks": [
+        {
+          "id": "6.1",
+          "title": "Connections: own meter (CA) and shared main + submeters",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "6.2",
+          "title": "Own-meter bills with distinct statuses",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "6.3",
+          "title": "Submeter readings, reset and override with reason",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "6.4",
+          "title": "Electricity account separate from rent",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Expenses",
+      "outcome": "Expenses by building or flat, payer type, stored building split.",
+      "status": "Not started",
+      "dependsOn": [
+        1,
+        3
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "",
+      "tasks": [
+        {
+          "id": "7.1",
+          "title": "Editable categories (add, rename, archive)",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "7.2",
+          "title": "Expense entry with payer type and evidence",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "7.3",
+          "title": "Store building split snapshot at posting",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "7.4",
+          "title": "Expense list and filters",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Documents",
+      "outcome": "Private agreements, IDs, bills and receipts attached to their records.",
+      "status": "Not started",
+      "dependsOn": [
+        2,
+        4
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "Firebase Storage needs the Blaze plan (blocker B3).",
+      "tasks": [
+        {
+          "id": "8.1",
+          "title": "Storage security rules",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "8.2",
+          "title": "Upload: camera, PDF, JPEG, PNG up to 15 MB",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "8.3",
+          "title": "Attach documents to their original record",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "8.4",
+          "title": "Authenticated preview and download",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Dashboard and reminders",
+      "outcome": "Home screen with overdue rent, bills due, expiring agreements and tasks.",
+      "status": "Not started",
+      "dependsOn": [
+        5,
+        6,
+        8
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "",
+      "tasks": [
+        {
+          "id": "9.1",
+          "title": "Computed reminders: rent, agreement 30/7 days, electricity",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "9.2",
+          "title": "Custom reminders",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "9.3",
+          "title": "Dashboard summary",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "9.4",
+          "title": "Decide push notifications vs in-app only",
+          "status": "Not started",
+          "comment": "Blocker B4."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Reports and exports",
+      "outcome": "Rent, electricity, expense, profit and occupancy reports with Excel/PDF export.",
+      "status": "Not started",
+      "dependsOn": [
+        5,
+        6,
+        7
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "",
+      "tasks": [
+        {
+          "id": "10.1",
+          "title": "Report calculations on agreed bases",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "10.2",
+          "title": "Filters: building, flat, tenant, dates",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "10.3",
+          "title": "Gross debt and credit shown separately from net",
+          "status": "Not started",
+          "comment": "Handoff concern #3."
+        },
+        {
+          "id": "10.4",
+          "title": "Excel export",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "10.5",
+          "title": "PDF export with full Unicode names",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Deploy and pilot",
+      "outcome": "Live on Firebase Hosting, installed on family phones, backups proven, pilot accepted.",
+      "status": "Not started",
+      "dependsOn": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "needsRecheck": false,
+      "recheckReason": "",
+      "comment": "",
+      "tasks": [
+        {
+          "id": "11.1",
+          "title": "Firebase Hosting deploy",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "11.2",
+          "title": "PNG app icons and offline service worker",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "11.3",
+          "title": "Backup export and restore drill",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "11.4",
+          "title": "Enter real setup data through the app",
+          "status": "Not started",
+          "comment": "Blocker B5."
+        },
+        {
+          "id": "11.5",
+          "title": "Family pilot on two or more devices",
+          "status": "Not started",
+          "comment": ""
+        },
+        {
+          "id": "11.6",
+          "title": "Run all 12 acceptance scenarios in the app",
+          "status": "Not started",
+          "comment": ""
+        }
+      ]
+    }
+  ],
+  "acceptance": [
+    {
+      "id": 1,
+      "title": "Full rent quick action saves the exact remaining amount once",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 5,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 2,
+      "title": "Partial payment keeps the remainder on its original period",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 5,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 3,
+      "title": "Missed periods paid oldest first; credit visible",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 5,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 4,
+      "title": "31st anniversary through February, incl. leap years",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 4,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 5,
+      "title": "Mid-period departure proration with explicit correction",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 4,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 6,
+      "title": "Replacement tenant inherits no debt; history kept",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 4,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 7,
+      "title": "Submeter readings exact; reset and override rules",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 6,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 8,
+      "title": "Building expense split incl. vacant flats, stable after new flat",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 7,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 9,
+      "title": "Both payer types reduce primary profit; cash surplus correct",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 10,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 10,
+      "title": "Electricity states (unpaid, no bill, unknown, failed) distinct",
+      "logicPhase": 6,
+      "logicStatus": "Not started",
+      "appPhase": 6,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 11,
+      "title": "Openings, history and generated charges never double-count",
+      "logicPhase": 1,
+      "logicStatus": "Not started",
+      "appPhase": 4,
+      "appStatus": "Not started"
+    },
+    {
+      "id": 12,
+      "title": "Permissions, audit, recoverable delete, private documents, exports",
+      "logicPhase": 2,
+      "logicStatus": "Not started",
+      "appPhase": 11,
+      "appStatus": "Not started"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "B1",
+      "title": "Git author name and email not set",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "0.7"
+      ],
+      "status": "Open",
+      "comment": "Owner to run git config user.name / user.email, or tell Claude the values."
+    },
+    {
+      "id": "B2",
+      "title": "Sign-in method: Google (recommended) or email + password",
+      "blocksPhases": [
+        2
+      ],
+      "blocksTasks": [
+        "2.1"
+      ],
+      "status": "Open",
+      "comment": ""
+    },
+    {
+      "id": "B3",
+      "title": "Firebase Blaze plan with budget alert",
+      "blocksPhases": [
+        8
+      ],
+      "blocksTasks": [],
+      "status": "Open",
+      "comment": "Required for Firebase Storage on new projects; expected cost ₹0 at family scale."
+    },
+    {
+      "id": "B4",
+      "title": "Reminders: push notifications or in-app only",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "9.4"
+      ],
+      "status": "Open",
+      "comment": "In-app reminders work either way."
+    },
+    {
+      "id": "B5",
+      "title": "Real flat inventory, tenants and opening balances",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "11.4"
+      ],
+      "status": "Open",
+      "comment": "Entered through the app during the pilot, never committed."
+    }
+  ]
+}
