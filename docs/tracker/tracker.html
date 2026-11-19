@@ -55,22 +55,22 @@
 </head>
 <body>
 <h1>Family Property Manager — build tracker</h1>
-<div class="muted">Last updated: 2026-11-19 19:44 IST · Source: tracker.json · History: <a href="CHANGELOG.md">CHANGELOG.md</a></div>
+<div class="muted">Last updated: 2026-11-19 21:30 IST · Source: tracker.json · History: <a href="CHANGELOG.md">CHANGELOG.md</a></div>
 
 <div class="summary">
-  <div class="card"><div class="muted">Overall progress</div><div class="big">8%</div><span class="bar wide"><span style="width:8%;background:#1f6f5c"></span></span><div class="muted">6 of 73 tasks done</div></div>
-  <div class="card"><div class="muted">Phases complete</div><div class="big">0 / 12</div></div>
-  <div class="card"><div class="muted">Open blockers</div><div class="big">5</div></div>
-  <div class="card"><div class="muted">Acceptance scenarios passing (logic / app)</div><div class="big">0 / 0 <span class="muted" style="font-size:1rem">of 12</span></div></div>
+  <div class="card"><div class="muted">Overall progress</div><div class="big">26%</div><span class="bar wide"><span style="width:26%;background:#1f6f5c"></span></span><div class="muted">19 of 73 tasks done</div></div>
+  <div class="card"><div class="muted">Phases complete</div><div class="big">2 / 12</div></div>
+  <div class="card"><div class="muted">Open blockers</div><div class="big">4</div></div>
+  <div class="card"><div class="muted">Acceptance scenarios passing (logic / app)</div><div class="big">10 / 0 <span class="muted" style="font-size:1rem">of 12</span></div></div>
 </div>
 
 <h2>▶ Where we are now</h2>
 <div class="card now">
-  <div><strong>Phase 0 · Foundation</strong> <span class="badge" style="background:#dbeafe;color:#1e3a8a;border-color:#2563eb">◐ In progress</span> 86% done</div>
-  <p><strong>Current step:</strong> Make the first git commit (waiting on Git author name and email).</p>
-  <p class="muted"><strong>Comment:</strong> Everything else in Phase 0 is built and checked. Phase 1 has no blockers and can start any time.</p>
+  <div><strong>Phase 2 · Sign-in and lockdown</strong> <span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> 0% done</div>
+  <p><strong>Current step:</strong> Waiting for owner decisions B2 (sign-in method) and B3 (Blaze plan) before starting Phase 2.</p>
+  <p class="muted"><strong>Comment:</strong> Phase 1 money engine is done and tested. Phase 2 is next on the critical path; nothing else can start before it.</p>
   <strong>Next steps</strong>
-  <ol><li>Owner sets Git author name and email, then make the first commit (task 0.7).</li><li>Start Phase 1: add Vitest and the money helpers (tasks 1.1–1.3).</li><li>Owner decides sign-in method and Blaze plan before Phase 2 (blockers B2, B3).</li></ol>
+  <ol><li>Owner decides sign-in method (B2) — Google sign-in recommended.</li><li>Owner switches the Firebase project to the Blaze plan with a budget alert (B3); needed by Phase 8, can be done any time before.</li><li>Start Phase 2: Firebase Auth, family allowlist with roles, Firestore rules and emulator tests.</li></ol>
 </div>
 
 <h2>Flowchart</h2>
@@ -95,22 +95,23 @@
 <path d="M1016,225 C1179,225 1179,225 1342,225" fill="none" stroke="#a3acb4" stroke-width="1.5" marker-end="url(#arrow)"/>
 <path d="M1544,121 C1575,121 1575,173 1606,173" fill="none" stroke="#a3acb4" stroke-width="1.5" marker-end="url(#arrow)"/>
 <path d="M1544,225 C1575,225 1575,173 1606,173" fill="none" stroke="#334155" stroke-width="3" marker-end="url(#arrow-crit)"/>
-<g><title>Phase 0 · Foundation: In progress, 86% (6/7 tasks)</title>
-<text x="24" y="126" class="here">▶ You are here</text>
-<rect x="24" y="134" width="200" height="78" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="4"/>
-<text x="34" y="154" class="n" fill="#1e3a8a">0 · Foundation</text>
-<text x="34" y="173" class="s" fill="#1e3a8a">◐ In progress · 86%</text>
+<g><title>Phase 0 · Foundation: Done, 100% (7/7 tasks)</title>
+<rect x="24" y="134" width="200" height="78" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="34" y="154" class="n" fill="#14532d">0 · Foundation</text>
+<text x="34" y="173" class="s" fill="#14532d">✔ Done · 100%</text>
 <rect x="34" y="186" width="180" height="8" rx="4" fill="#ffffff" opacity="0.8"/>
-<rect x="34" y="186" width="154.8" height="8" rx="4" fill="#2563eb"/>
+<rect x="34" y="186" width="180" height="8" rx="4" fill="#16a34a"/>
 </g>
-<g><title>Phase 1 · Money engine: Not started, 0% (0/12 tasks)</title>
-<rect x="288" y="82" width="200" height="78" rx="10" fill="#eef0f2" stroke="#9aa3ab" stroke-width="1.5"/>
-<text x="298" y="102" class="n" fill="#3b4248">1 · Money engine</text>
-<text x="298" y="121" class="s" fill="#3b4248">○ Not started · 0%</text>
+<g><title>Phase 1 · Money engine: Done, 100% (12/12 tasks)</title>
+<rect x="288" y="82" width="200" height="78" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="298" y="102" class="n" fill="#14532d">1 · Money engine</text>
+<text x="298" y="121" class="s" fill="#14532d">✔ Done · 100%</text>
 <rect x="298" y="134" width="180" height="8" rx="4" fill="#ffffff" opacity="0.8"/>
+<rect x="298" y="134" width="180" height="8" rx="4" fill="#16a34a"/>
 </g>
 <g><title>Phase 2 · Sign-in and lockdown: Not started, 0% (0/7 tasks)</title>
-<rect x="288" y="186" width="200" height="78" rx="10" fill="#eef0f2" stroke="#9aa3ab" stroke-width="1.5"/>
+<text x="288" y="178" class="here">▶ You are here</text>
+<rect x="288" y="186" width="200" height="78" rx="10" fill="#eef0f2" stroke="#9aa3ab" stroke-width="4"/>
 <text x="298" y="206" class="n" fill="#3b4248">2 · Sign-in and lockdown</text>
 <text x="298" y="225" class="s" fill="#3b4248">○ Not started · 0%</text>
 <rect x="298" y="238" width="180" height="8" rx="4" fill="#ffffff" opacity="0.8"/>
@@ -177,11 +178,11 @@
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>Phase</th><th>Status</th><th>Progress</th><th>Depends on</th><th>Unlocks</th><th>Comment</th></tr></thead>
 <tbody>
-<tr class="current">
+<tr>
   <td>0</td>
-  <td>▶ Foundation</td>
-  <td><span class="badge" style="background:#dbeafe;color:#1e3a8a;border-color:#2563eb">◐ In progress</span></td>
-  <td class="prog"><span class="bar"><span style="width:86%;background:#2563eb"></span></span> 86% <small>(6/7)</small></td>
+  <td>Foundation</td>
+  <td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td>
+  <td class="prog"><span class="bar"><span style="width:100%;background:#16a34a"></span></span> 100% <small>(7/7)</small></td>
   <td>—</td>
   <td>1, 2, 11</td>
   <td>Lint, build and browser check (desktop and phone sizes) passed on 2026-11-19.</td>
@@ -189,15 +190,15 @@
 <tr>
   <td>1</td>
   <td>Money engine</td>
-  <td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td>
-  <td class="prog"><span class="bar"><span style="width:0%;background:#9aa3ab"></span></span> 0% <small>(0/12)</small></td>
+  <td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td>
+  <td class="prog"><span class="bar"><span style="width:100%;background:#16a34a"></span></span> 100% <small>(12/12)</small></td>
   <td>0</td>
   <td>4, 5, 6, 7, 11</td>
-  <td>Can run in parallel with Phases 2 and 3.</td>
+  <td>61 tests passing (npm test). Logic only: Firestore wiring and screens come in Phases 4-7 and 10.</td>
 </tr>
-<tr>
+<tr class="current">
   <td>2</td>
-  <td>Sign-in and lockdown</td>
+  <td>▶ Sign-in and lockdown</td>
   <td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td>
   <td class="prog"><span class="bar"><span style="width:0%;background:#9aa3ab"></span></span> 0% <small>(0/7)</small></td>
   <td>0</td>
@@ -291,7 +292,7 @@
 <div class="table-wrap"><table>
 <thead><tr><th>ID</th><th>Decision / blocker</th><th>Blocks</th><th>Status</th><th>Comment</th></tr></thead>
 <tbody>
-<tr><td>B1</td><td>Git author name and email not set</td><td>Task 0.7</td><td><span class="pill open">Open</span></td><td>Owner to run git config user.name / user.email, or tell Claude the values.</td></tr>
+<tr><td>B1</td><td>Git author name and email not set</td><td>Task 0.7</td><td><span class="pill resolved">Resolved</span></td><td>Owner to run git config user.name / user.email, or tell Claude the values.</td></tr>
 <tr><td>B2</td><td>Sign-in method: Google (recommended) or email + password</td><td>Phase 2, Task 2.1</td><td><span class="pill open">Open</span></td><td></td></tr>
 <tr><td>B3</td><td>Firebase Blaze plan with budget alert</td><td>Phase 8</td><td><span class="pill open">Open</span></td><td>Required for Firebase Storage on new projects; expected cost ₹0 at family scale.</td></tr>
 <tr><td>B4</td><td>Reminders: push notifications or in-app only</td><td>Task 9.4</td><td><span class="pill open">Open</span></td><td>In-app reminders work either way.</td></tr>
@@ -303,26 +304,26 @@
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>Scenario</th><th>Logic test</th><th>App check</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>Full rent quick action saves the exact remaining amount once</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 5</small></td></tr>
-<tr><td>2</td><td>Partial payment keeps the remainder on its original period</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 5</small></td></tr>
-<tr><td>3</td><td>Missed periods paid oldest first; credit visible</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 5</small></td></tr>
-<tr><td>4</td><td>31st anniversary through February, incl. leap years</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
-<tr><td>5</td><td>Mid-period departure proration with explicit correction</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
-<tr><td>6</td><td>Replacement tenant inherits no debt; history kept</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
-<tr><td>7</td><td>Submeter readings exact; reset and override rules</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 6</small></td></tr>
-<tr><td>8</td><td>Building expense split incl. vacant flats, stable after new flat</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 7</small></td></tr>
-<tr><td>9</td><td>Both payer types reduce primary profit; cash surplus correct</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 10</small></td></tr>
+<tr><td>1</td><td>Full rent quick action saves the exact remaining amount once</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 5</small></td></tr>
+<tr><td>2</td><td>Partial payment keeps the remainder on its original period</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 5</small></td></tr>
+<tr><td>3</td><td>Missed periods paid oldest first; credit visible</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 5</small></td></tr>
+<tr><td>4</td><td>31st anniversary through February, incl. leap years</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
+<tr><td>5</td><td>Mid-period departure proration with explicit correction</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
+<tr><td>6</td><td>Replacement tenant inherits no debt; history kept</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
+<tr><td>7</td><td>Submeter readings exact; reset and override rules</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 6</small></td></tr>
+<tr><td>8</td><td>Building expense split incl. vacant flats, stable after new flat</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 7</small></td></tr>
+<tr><td>9</td><td>Both payer types reduce primary profit; cash surplus correct</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 10</small></td></tr>
 <tr><td>10</td><td>Electricity states (unpaid, no bill, unknown, failed) distinct</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 6</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 6</small></td></tr>
-<tr><td>11</td><td>Openings, history and generated charges never double-count</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
+<tr><td>11</td><td>Openings, history and generated charges never double-count</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <small>Phase 1</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 4</small></td></tr>
 <tr><td>12</td><td>Permissions, audit, recoverable delete, private documents, exports</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 2</small></td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <small>Phase 11</small></td></tr>
 </tbody></table></div>
 
 <h2>Phase details</h2>
-<details open class="phase current">
-<summary><span class="ptitle">▶ Phase 0 · Foundation</span> <span class="badge" style="background:#dbeafe;color:#1e3a8a;border-color:#2563eb">◐ In progress</span> <span class="prog"><span class="bar"><span style="width:86%;background:#2563eb"></span></span> 86%</span></summary>
+<details class="phase">
+<summary><span class="ptitle">Phase 0 · Foundation</span> <span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <span class="prog"><span class="bar"><span style="width:100%;background:#16a34a"></span></span> 100%</span></summary>
 <p><strong>Outcome:</strong> Git repo, app shell, navigation, requirements and plan docs.<br>
 <strong>Depends on:</strong> —<br>
-<strong>Unlocks:</strong> 1 · Money engine, 2 · Sign-in and lockdown, 11 · Deploy and pilot<br><strong>Blocked by:</strong> B1 (Git author name and email not set)<br><strong>Comment:</strong> Lint, build and browser check (desktop and phone sizes) passed on 2026-11-19.</p>
+<strong>Unlocks:</strong> 1 · Money engine, 2 · Sign-in and lockdown, 11 · Deploy and pilot<br><strong>Comment:</strong> Lint, build and browser check (desktop and phone sizes) passed on 2026-11-19.</p>
 <table><thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Comment</th></tr></thead><tbody>
 <tr><td>0.1</td><td>Carry over requirements from the Family Rent handoff (docs/REQUIREMENTS.md)</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td></td></tr>
 <tr><td>0.2</td><td>Roadmap and architecture notes (docs/ROADMAP.md)</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td></td></tr>
@@ -330,31 +331,31 @@
 <tr><td>0.4</td><td>Initialise git repository and confirm .gitignore</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>.env.local, node_modules and dist are ignored.</td></tr>
 <tr><td>0.5</td><td>App shell: routing, sidebar, phone bottom bar, placeholder pages</td><td><span class="badge" style="background:#bbf7d0;color:#14532d;border-color:#15803d">✔✔ Verified</span></td><td>Checked in the browser at desktop and 375px phone width; no console errors.</td></tr>
 <tr><td>0.6</td><td>Build progress tracker (this document) with change log</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td></td></tr>
-<tr><td>0.7</td><td>First git commit</td><td><span class="badge" style="background:#fee2e2;color:#7f1d1d;border-color:#dc2626">⛔ Blocked</span></td><td>All files staged. Blocked by B1 (Git author not set).</td></tr>
+<tr><td>0.7</td><td>First git commit</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>Commit 17736d8 &quot;project started&quot;.</td></tr>
 </tbody></table>
 </details>
 <details class="phase">
-<summary><span class="ptitle">Phase 1 · Money engine</span> <span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <span class="prog"><span class="bar"><span style="width:0%;background:#9aa3ab"></span></span> 0%</span></summary>
+<summary><span class="ptitle">Phase 1 · Money engine</span> <span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span> <span class="prog"><span class="bar"><span style="width:100%;background:#16a34a"></span></span> 100%</span></summary>
 <p><strong>Outcome:</strong> Pure JavaScript functions for every money rule, with automated tests. No Firebase.<br>
 <strong>Depends on:</strong> 0 · Foundation<br>
-<strong>Unlocks:</strong> 4 · Tenants and tenancies, 5 · Collections, 6 · Electricity, 7 · Expenses, 11 · Deploy and pilot<br><strong>Comment:</strong> Can run in parallel with Phases 2 and 3.</p>
+<strong>Unlocks:</strong> 4 · Tenants and tenancies, 5 · Collections, 6 · Electricity, 7 · Expenses, 11 · Deploy and pilot<br><strong>Comment:</strong> 61 tests passing (npm test). Logic only: Firestore wiring and screens come in Phases 4-7 and 10.</p>
 <table><thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Comment</th></tr></thead><tbody>
-<tr><td>1.1</td><td>Add Vitest test runner</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.2</td><td>Money helpers: integer paise, ₹ Indian formatting, half-up rounding</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.3</td><td>Asia/Kolkata business date helpers</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.4</td><td>Anniversary rent periods incl. 29/30/31 clamping and leap years</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.5</td><td>Departure proration (leaving day included, half-up)</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.6</td><td>Payment allocation: oldest first, credit, manual reallocation</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.7</td><td>Adjustments target their own period (handoff concern #1)</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.8</td><td>Building expense split incl. vacant flats, exact paise</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.9</td><td>Primary profit and owner cash surplus formulas</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.10</td><td>Expected rent split across calendar years to the paisa</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.11</td><td>Openings never double-count with generated charges</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
-<tr><td>1.12</td><td>Submeter consumption with exact arithmetic, reset and override</td><td><span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span></td><td></td></tr>
+<tr><td>1.1</td><td>Add Vitest test runner</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>Vitest 5.1; npm test.</td></tr>
+<tr><td>1.2</td><td>Money helpers: integer paise, ₹ Indian formatting, half-up rounding</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>src/lib/money/money.js</td></tr>
+<tr><td>1.3</td><td>Asia/Kolkata business date helpers</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>src/lib/money/dates.js</td></tr>
+<tr><td>1.4</td><td>Anniversary rent periods incl. 29/30/31 clamping and leap years</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>src/lib/money/rent.js</td></tr>
+<tr><td>1.5</td><td>Departure proration (leaving day included, half-up)</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>departurePreview / departureCharges; also flags a leaving period covered by an opening for manual review (handoff concern #2).</td></tr>
+<tr><td>1.6</td><td>Payment allocation: oldest first, credit, manual reallocation</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>src/lib/money/allocation.js; payment preview warns when older debt is paid first.</td></tr>
+<tr><td>1.7</td><td>Adjustments target their own period (handoff concern #1)</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>Fixed: corrections/reversals reduce their own period first. Mutation check confirmed the tests catch the old behaviour.</td></tr>
+<tr><td>1.8</td><td>Building expense split incl. vacant flats, exact paise</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>src/lib/money/expenses.js</td></tr>
+<tr><td>1.9</td><td>Primary profit and owner cash surplus formulas</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>src/lib/money/reports.js</td></tr>
+<tr><td>1.10</td><td>Expected rent split across calendar years to the paisa</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>expectedRentInRange; departure across year end tested.</td></tr>
+<tr><td>1.11</td><td>Openings never double-count with generated charges</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>openingCharge shares the period ID with generated rent.</td></tr>
+<tr><td>1.12</td><td>Submeter consumption with exact arithmetic, reset and override</td><td><span class="badge" style="background:#dcfce7;color:#14532d;border-color:#16a34a">✔ Done</span></td><td>Exact BigInt arithmetic, so the preview equals the saved amount (handoff concern #6).</td></tr>
 </tbody></table>
 </details>
-<details class="phase">
-<summary><span class="ptitle">Phase 2 · Sign-in and lockdown</span> <span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <span class="prog"><span class="bar"><span style="width:0%;background:#9aa3ab"></span></span> 0%</span></summary>
+<details open class="phase current">
+<summary><span class="ptitle">▶ Phase 2 · Sign-in and lockdown</span> <span class="badge" style="background:#eef0f2;color:#3b4248;border-color:#9aa3ab">○ Not started</span> <span class="prog"><span class="bar"><span style="width:0%;background:#9aa3ab"></span></span> 0%</span></summary>
 <p><strong>Outcome:</strong> Family-only sign-in with admin/family roles enforced by Firestore rules.<br>
 <strong>Depends on:</strong> 0 · Foundation<br>
 <strong>Unlocks:</strong> 3 · Buildings and flats, 8 · Documents, 11 · Deploy and pilot<br><strong>Blocked by:</strong> B2 (Sign-in method: Google (recommended) or email + password)<br><strong>Comment:</strong> Needs decision B2 (sign-in method) before starting.</p>

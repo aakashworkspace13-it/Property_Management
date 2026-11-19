@@ -21,8 +21,15 @@ Then open the URL Vite prints (usually http://localhost:5173).
 
 ```bash
 npm run lint
+npm test
 npm run build
 ```
+
+Money rules live in `src/lib/money/` and are covered by the tests in that folder.
+
+## Build tracker
+
+Progress, blockers and next steps: [docs/tracker/TRACKER.md](docs/tracker/TRACKER.md) (or open `docs/tracker/tracker.html`). Regenerate with `npm run tracker`.
 
 ## Configuration
 

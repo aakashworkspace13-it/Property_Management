@@ -1,6 +1,6 @@
 {
   "project": "Family Property Manager",
-  "updated": "2026-11-19 19:44 IST",
+  "updated": "2026-11-19 21:30 IST",
   "statuses": [
     "Not started",
     "In progress",
@@ -9,14 +9,14 @@
     "Verified"
   ],
   "current": {
-    "phase": 0,
-    "step": "Make the first git commit (waiting on Git author name and email).",
-    "comment": "Everything else in Phase 0 is built and checked. Phase 1 has no blockers and can start any time."
+    "phase": 2,
+    "step": "Waiting for owner decisions B2 (sign-in method) and B3 (Blaze plan) before starting Phase 2.",
+    "comment": "Phase 1 money engine is done and tested. Phase 2 is next on the critical path; nothing else can start before it."
   },
   "next": [
-    "Owner sets Git author name and email, then make the first commit (task 0.7).",
-    "Start Phase 1: add Vitest and the money helpers (tasks 1.1–1.3).",
-    "Owner decides sign-in method and Blaze plan before Phase 2 (blockers B2, B3)."
+    "Owner decides sign-in method (B2) — Google sign-in recommended.",
+    "Owner switches the Firebase project to the Blaze plan with a budget alert (B3); needed by Phase 8, can be done any time before.",
+    "Start Phase 2: Firebase Auth, family allowlist with roles, Firestore rules and emulator tests."
   ],
   "criticalPath": [
     0,
@@ -32,7 +32,7 @@
       "id": 0,
       "name": "Foundation",
       "outcome": "Git repo, app shell, navigation, requirements and plan docs.",
-      "status": "In progress",
+      "status": "Done",
       "dependsOn": [],
       "needsRecheck": false,
       "recheckReason": "",
@@ -77,8 +77,8 @@
         {
           "id": "0.7",
           "title": "First git commit",
-          "status": "Blocked",
-          "comment": "All files staged. Blocked by B1 (Git author not set)."
+          "status": "Done",
+          "comment": "Commit 17736d8 \"project started\"."
         }
       ]
     },
@@ -86,85 +86,85 @@
       "id": 1,
       "name": "Money engine",
       "outcome": "Pure JavaScript functions for every money rule, with automated tests. No Firebase.",
-      "status": "Not started",
+      "status": "Done",
       "dependsOn": [
         0
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "Can run in parallel with Phases 2 and 3.",
+      "comment": "61 tests passing (npm test). Logic only: Firestore wiring and screens come in Phases 4-7 and 10.",
       "tasks": [
         {
           "id": "1.1",
           "title": "Add Vitest test runner",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "Vitest 5.1; npm test."
         },
         {
           "id": "1.2",
           "title": "Money helpers: integer paise, ₹ Indian formatting, half-up rounding",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "src/lib/money/money.js"
         },
         {
           "id": "1.3",
           "title": "Asia/Kolkata business date helpers",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "src/lib/money/dates.js"
         },
         {
           "id": "1.4",
           "title": "Anniversary rent periods incl. 29/30/31 clamping and leap years",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "src/lib/money/rent.js"
         },
         {
           "id": "1.5",
           "title": "Departure proration (leaving day included, half-up)",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "departurePreview / departureCharges; also flags a leaving period covered by an opening for manual review (handoff concern #2)."
         },
         {
           "id": "1.6",
           "title": "Payment allocation: oldest first, credit, manual reallocation",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "src/lib/money/allocation.js; payment preview warns when older debt is paid first."
         },
         {
           "id": "1.7",
           "title": "Adjustments target their own period (handoff concern #1)",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "Fixed: corrections/reversals reduce their own period first. Mutation check confirmed the tests catch the old behaviour."
         },
         {
           "id": "1.8",
           "title": "Building expense split incl. vacant flats, exact paise",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "src/lib/money/expenses.js"
         },
         {
           "id": "1.9",
           "title": "Primary profit and owner cash surplus formulas",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "src/lib/money/reports.js"
         },
         {
           "id": "1.10",
           "title": "Expected rent split across calendar years to the paisa",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "expectedRentInRange; departure across year end tested."
         },
         {
           "id": "1.11",
           "title": "Openings never double-count with generated charges",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "openingCharge shares the period ID with generated rent."
         },
         {
           "id": "1.12",
           "title": "Submeter consumption with exact arithmetic, reset and override",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "Exact BigInt arithmetic, so the preview equals the saved amount (handoff concern #6)."
         }
       ]
     },
@@ -658,7 +658,7 @@
       "id": 1,
       "title": "Full rent quick action saves the exact remaining amount once",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 5,
       "appStatus": "Not started"
     },
@@ -666,7 +666,7 @@
       "id": 2,
       "title": "Partial payment keeps the remainder on its original period",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 5,
       "appStatus": "Not started"
     },
@@ -674,7 +674,7 @@
       "id": 3,
       "title": "Missed periods paid oldest first; credit visible",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 5,
       "appStatus": "Not started"
     },
@@ -682,7 +682,7 @@
       "id": 4,
       "title": "31st anniversary through February, incl. leap years",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 4,
       "appStatus": "Not started"
     },
@@ -690,7 +690,7 @@
       "id": 5,
       "title": "Mid-period departure proration with explicit correction",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 4,
       "appStatus": "Not started"
     },
@@ -698,7 +698,7 @@
       "id": 6,
       "title": "Replacement tenant inherits no debt; history kept",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 4,
       "appStatus": "Not started"
     },
@@ -706,7 +706,7 @@
       "id": 7,
       "title": "Submeter readings exact; reset and override rules",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 6,
       "appStatus": "Not started"
     },
@@ -714,7 +714,7 @@
       "id": 8,
       "title": "Building expense split incl. vacant flats, stable after new flat",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 7,
       "appStatus": "Not started"
     },
@@ -722,7 +722,7 @@
       "id": 9,
       "title": "Both payer types reduce primary profit; cash surplus correct",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 10,
       "appStatus": "Not started"
     },
@@ -738,7 +738,7 @@
       "id": 11,
       "title": "Openings, history and generated charges never double-count",
       "logicPhase": 1,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 4,
       "appStatus": "Not started"
     },
@@ -759,7 +759,7 @@
       "blocksTasks": [
         "0.7"
       ],
-      "status": "Open",
+      "status": "Resolved",
       "comment": "Owner to run git config user.name / user.email, or tell Claude the values."
     },
     {

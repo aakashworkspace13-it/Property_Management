@@ -60,7 +60,8 @@ The tracker in `docs/tracker/` is the single place to see how far the build is a
 - **Source of truth is `docs/tracker/tracker.json`.** Never hand-edit `TRACKER.md` or `tracker.html`; they are generated.
 - **Update it whenever** a task or phase changes status, the current step or next steps change, a blocker opens or resolves, or the plan itself changes (phases, tasks, dependencies, requirements).
 - After editing `tracker.json`, run:
-  `npm run tracker -- --log "What changed" --why "Reason" --phases <ids of phases whose plan or status changed>`
+  `node scripts/build-tracker.js --log "What changed" --why "Reason" --phases <ids of phases whose plan or status changed>`
+  (Call `node` directly, not `npm run tracker -- …`: on Windows npm can silently drop or hang on longer quoted arguments.)
   This stamps the change in IST, writes a `CHANGELOG.md` entry with the impacted downstream phases, and flags any impacted Done/Verified phase as "Needs re-check".
 - Clear a "Needs re-check" flag (`needsRecheck: false`) only after reviewing that phase, and log the review.
 - Use only these statuses: Not started, In progress, Blocked, Done, Verified (Verified = tested and checked in the app).

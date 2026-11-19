@@ -7,7 +7,9 @@
 //   npm run tracker
 //       Validate tracker.json and regenerate TRACKER.md and tracker.html.
 //
-//   npm run tracker -- --log "What changed" --why "Reason" [--phases 1,4]
+//   node scripts/build-tracker.js --log "What changed" --why "Reason" [--phases 1,4]
+//       (Call node directly for logged changes: on Windows, `npm run tracker -- --log ...`
+//       can silently drop or hang on longer quoted text.)
 //       Also add a timestamped (IST) entry to CHANGELOG.md. --phases lists the
 //       phases whose plan or status changed; every phase that depends on them
 //       (directly or indirectly) is listed as impacted, and impacted phases that
@@ -227,7 +229,7 @@ function addChangelogEntry({ stamp, what, why, changed, impacted, flagged }) {
   try {
     text = readFileSync(changelogPath, 'utf8')
   } catch {
-    text = `# Tracker change log\n\nEvery change to the plan or progress, newest first. Times are IST (Asia/Kolkata).\nGenerated entries come from \`npm run tracker -- --log ... --why ...\`.\n\n${CHANGELOG_MARKER}\n`
+    text = `# Tracker change log\n\nEvery change to the plan or progress, newest first. Times are IST (Asia/Kolkata).\nGenerated entries come from \`node scripts/build-tracker.js --log ... --why ...\`.\n\n${CHANGELOG_MARKER}\n`
   }
   if (!text.includes(CHANGELOG_MARKER)) fail(`CHANGELOG.md is missing the marker line:\n${CHANGELOG_MARKER}`)
   const list = (ids) => (ids.length ? ids.map(phaseLabel).join('; ') : 'none')
@@ -375,7 +377,7 @@ function renderMarkdown() {
   out.push('## How to update')
   out.push('')
   out.push('1. Edit `docs/tracker/tracker.json` (statuses, comments, current step, next steps, blockers).')
-  out.push('2. Run `npm run tracker -- --log "What changed" --why "Reason" --phases <changed phase ids>`.')
+  out.push('2. Run `node scripts/build-tracker.js --log "What changed" --why "Reason" --phases <changed phase ids>`.')
   out.push('3. Review any phase flagged ⚠ Needs re-check; set its `needsRecheck` back to `false` once reviewed, and log that too.')
   out.push('4. Commit `tracker.json`, `TRACKER.md`, `tracker.html` and `CHANGELOG.md` together.')
   out.push('')
