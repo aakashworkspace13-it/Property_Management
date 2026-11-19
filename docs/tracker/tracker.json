@@ -1,6 +1,6 @@
 {
   "project": "Family Property Manager",
-  "updated": "2026-11-19 21:30 IST",
+  "updated": "2026-11-20 00:09 IST",
   "statuses": [
     "Not started",
     "In progress",
@@ -9,14 +9,14 @@
     "Verified"
   ],
   "current": {
-    "phase": 2,
-    "step": "Waiting for owner decisions B2 (sign-in method) and B3 (Blaze plan) before starting Phase 2.",
-    "comment": "Phase 1 money engine is done and tested. Phase 2 is next on the critical path; nothing else can start before it."
+    "phase": 3,
+    "step": "Start Phase 3: buildings and flats (add/edit buildings, flats with floor and position, duplicate check, occupancy).",
+    "comment": "Phase 2 is complete and live on the real Firebase project."
   },
   "next": [
-    "Owner decides sign-in method (B2) — Google sign-in recommended.",
-    "Owner switches the Firebase project to the Blaze plan with a budget alert (B3); needed by Phase 8, can be done any time before.",
-    "Start Phase 2: Firebase Auth, family allowlist with roles, Firestore rules and emulator tests."
+    "Owner: commit Phase 2.",
+    "Phase 3: buildings and flats.",
+    "Owner: add the other family members in Settings → Family members when ready."
   ],
   "criticalPath": [
     0,
@@ -172,55 +172,61 @@
       "id": 2,
       "name": "Sign-in and lockdown",
       "outcome": "Family-only sign-in with admin/family roles enforced by Firestore rules.",
-      "status": "Not started",
+      "status": "Verified",
       "dependsOn": [
         0
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "Needs decision B2 (sign-in method) before starting.",
+      "comment": "Live on property-management-a5e84: Google sign-in, owner is Admin, rules deployed. Verified on emulators and on the real project.",
       "tasks": [
         {
           "id": "2.1",
           "title": "Confirm sign-in method (Google recommended)",
-          "status": "Not started",
-          "comment": "Blocker B2."
+          "status": "Done",
+          "comment": "Owner chose Google sign-in (2026-11-19)."
         },
         {
           "id": "2.2",
           "title": "Firebase Auth sign-in and sign-out",
-          "status": "Not started",
-          "comment": ""
+          "status": "Verified",
+          "comment": "src/features/auth/. Checked in the browser with the Auth emulator; falls back to redirect when popups are blocked."
         },
         {
           "id": "2.3",
           "title": "Allowlist with admin/family roles",
-          "status": "Not started",
-          "comment": ""
+          "status": "Verified",
+          "comment": "members/{email}; Settings → Family members. First sign-in becomes owner (one time only, owner choice). Checked: owner setup, add member, family view."
         },
         {
           "id": "2.4",
           "title": "Route guard and 'not authorised' page",
-          "status": "Not started",
-          "comment": ""
+          "status": "Verified",
+          "comment": "AuthGate: sign-in, owner setup, not-on-list and access-off screens. Checked with an outsider account."
         },
         {
           "id": "2.5",
           "title": "Firestore security rules",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "firestore.rules: default deny; members, one-time owner setup, append-only audit log."
         },
         {
           "id": "2.6",
           "title": "Rules tests in the Firebase emulator",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "16 tests in tests/rules (npm run test:rules), all passing."
         },
         {
           "id": "2.7",
           "title": "Audit log helper; append-only rule",
-          "status": "Not started",
-          "comment": ""
+          "status": "Verified",
+          "comment": "src/services/audit.js; entries written in the same batch as each change (seen in the emulator)."
+        },
+        {
+          "id": "2.8",
+          "title": "Connect the real Firebase project and deploy rules",
+          "status": "Verified",
+          "comment": "Linked as prod (.firebaserc); rules deployed with npm run deploy:rules; owner signed in on the real project and is Admin (2026-11-20)."
         }
       ]
     },
@@ -746,7 +752,7 @@
       "id": 12,
       "title": "Permissions, audit, recoverable delete, private documents, exports",
       "logicPhase": 2,
-      "logicStatus": "Not started",
+      "logicStatus": "In progress",
       "appPhase": 11,
       "appStatus": "Not started"
     }
@@ -771,8 +777,8 @@
       "blocksTasks": [
         "2.1"
       ],
-      "status": "Open",
-      "comment": ""
+      "status": "Resolved",
+      "comment": "Google sign-in chosen 2026-11-19."
     },
     {
       "id": "B3",
@@ -803,6 +809,16 @@
       ],
       "status": "Open",
       "comment": "Entered through the app during the pilot, never committed."
+    },
+    {
+      "id": "B6",
+      "title": "Owner creates the Firebase project and shares its project ID",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "2.8"
+      ],
+      "status": "Resolved",
+      "comment": "Project property-management-a5e84 created; rules deployed 2026-11-20."
     }
   ]
 }

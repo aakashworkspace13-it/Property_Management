@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { moreSections } from '../../app/navigation.js'
+import UserBox from '../../app/UserBox.jsx'
 
 export default function MorePage() {
   return (
@@ -15,6 +16,9 @@ export default function MorePage() {
           </li>
         ))}
       </ul>
+      <div className="card section">
+        <UserBox />
+      </div>
     </section>
   )
 }

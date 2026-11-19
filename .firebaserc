@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "demo-family-property",
+    "prod": "property-management-a5e84"
+  }
+}

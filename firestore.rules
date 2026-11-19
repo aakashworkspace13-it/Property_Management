@@ -1,0 +1,135 @@
+rules_version = '2';
+
+// Family Property Manager — Firestore security rules.
+// Default: everything is denied. Each collection below opens only what it needs.
+// Tested in tests/rules/ against the Firestore emulator (npm run test:rules).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- identity helpers ----------
+
+    // Signed in with a verified email (Google accounts are always verified).
+    function signedIn() {
+      return request.auth != null
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true;
+    }
+
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+
+    function memberPath(email) {
+      return /databases/$(database)/documents/members/$(email);
+    }
+
+    function setupPath() {
+      return /databases/$(database)/documents/config/setup;
+    }
+
+    // Active family member (state before this request).
+    function isMember() {
+      return signedIn()
+        && exists(memberPath(myEmail()))
+        && get(memberPath(myEmail())).data.active == true;
+    }
+
+    function isAdmin() {
+      return isMember() && get(memberPath(myEmail())).data.role == 'admin';
+    }
+
+    // Active member once this request's batch is applied (used for the owner setup batch).
+    function isMemberAfter() {
+      return signedIn()
+        && existsAfter(memberPath(myEmail()))
+        && getAfter(memberPath(myEmail())).data.active == true;
+    }
+
+    // ---------- one-time owner setup ----------
+    // The first person to sign in on a fresh database can become the owner (first admin),
+    // only in the same batch that creates their admin member record. Never again after that.
+
+    match /config/setup {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && !exists(setupPath())
+        && request.resource.data.keys().hasOnly(['ownerUid', 'createdAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && existsAfter(memberPath(myEmail()))
+        && getAfter(memberPath(myEmail())).data.role == 'admin';
+      allow update, delete: if false;
+    }
+
+    // ---------- family members (allowlist) ----------
+
+    function validMember(email) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['email', 'name', 'role', 'active', 'addedBy', 'addedAt'])
+        && d.keys().hasOnly(['email', 'name', 'role', 'active', 'addedBy', 'addedAt', 'updatedBy', 'updatedAt'])
+        && email == email.lower()
+        && d.email == email
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+        && d.role in ['admin', 'family']
+        && d.active is bool;
+    }
+
+    match /members/{email} {
+      // Members see the whole list; anyone signed in may check their own record.
+      allow read: if isMember() || (signedIn() && email == myEmail());
+
+      allow create: if validMember(email)
+        && request.resource.data.addedAt == request.time
+        && request.resource.data.addedBy == myEmail()
+        && !('updatedAt' in request.resource.data)
+        && (
+          // an admin adds someone
+          isAdmin()
+          // or the owner-setup batch creates the first admin (themselves)
+          || (signedIn()
+              && email == myEmail()
+              && !exists(setupPath())
+              && existsAfter(setupPath())
+              && getAfter(setupPath()).data.ownerUid == request.auth.uid
+              && request.resource.data.role == 'admin'
+              && request.resource.data.active == true)
+        );
+
+      allow update: if isAdmin()
+        && validMember(email)
+        && request.resource.data.addedBy == resource.data.addedBy
+        && request.resource.data.addedAt == resource.data.addedAt
+        && request.resource.data.updatedBy == myEmail()
+        && request.resource.data.updatedAt == request.time
+        // an admin can never demote or deactivate themselves (no lock-out)
+        && (email != myEmail()
+            || (request.resource.data.role == 'admin' && request.resource.data.active == true));
+
+      // Members are deactivated, never deleted, so history keeps its names.
+      allow delete: if false;
+    }
+
+    // ---------- audit log (append-only) ----------
+
+    match /auditLogs/{entryId} {
+      allow read: if isMember();
+      allow create: if isMemberAfter()
+        && request.resource.data.keys().hasOnly(
+             ['actorUid', 'actorEmail', 'action', 'entity', 'entityId', 'changedFields', 'before', 'after', 'at'])
+        && request.resource.data.keys().hasAll(['actorUid', 'actorEmail', 'action', 'entity', 'entityId', 'at'])
+        && request.resource.data.actorUid == request.auth.uid
+        && request.resource.data.actorEmail == myEmail()
+        && request.resource.data.at == request.time
+        && request.resource.data.action is string
+        && request.resource.data.entity is string
+        && request.resource.data.entityId is string;
+      allow update, delete: if false;
+    }
+
+    // ---------- everything else ----------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -5,6 +5,30 @@ Generated entries come from `node scripts/build-tracker.js --log ... --why ...`.
 
 <!-- new entries go below this line, newest first -->
 
+## 2026-11-20 00:09 IST — Phase 2 complete and live
+
+- **Why:** Rules deployed to property-management-a5e84 and the owner signed in as Admin on the real project.
+- **Phases changed:** 2 · Sign-in and lockdown
+- **Impact (dependent phases):** 3 · Buildings and flats; 4 · Tenants and tenancies; 5 · Collections; 6 · Electricity; 7 · Expenses; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 36%
+
+## 2026-11-19 22:19 IST — Next steps updated
+
+- **Why:** Phase 1 was committed by the owner as 7f2058f.
+- **Phases changed:** none
+- **Impact (dependent phases):** none
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 35%
+
+## 2026-11-19 22:19 IST — Phase 2 built and verified on emulators
+
+- **Why:** Google sign-in, one-time owner setup, family members with roles, Firestore rules (16 tests) and audit log done; only the real-project connection is left.
+- **Phases changed:** 2 · Sign-in and lockdown
+- **Impact (dependent phases):** 3 · Buildings and flats; 4 · Tenants and tenancies; 5 · Collections; 6 · Electricity; 7 · Expenses; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 35%
+
 ## 2026-11-19 21:30 IST — Phase 1 money engine complete
 
 - **Why:** All 12 Phase 1 tasks done with 61 passing tests; logic side of acceptance scenarios 1-9 and 11 done; handoff concern #1 fixed.

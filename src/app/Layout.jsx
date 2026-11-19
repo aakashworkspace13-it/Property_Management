@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router'
 import { sections } from './navigation.js'
+import UserBox from './UserBox.jsx'
 
 function navClass({ isActive }) {
   return isActive ? 'nav-link active' : 'nav-link'
@@ -21,6 +22,7 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+        <UserBox />
       </aside>
 
       <main className="content">

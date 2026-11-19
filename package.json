@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "tracker": "node scripts/build-tracker.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "emulators": "node scripts/firebase.js emulators:start --project demo-family-property",
+    "test:rules": "node scripts/firebase.js emulators:exec --only firestore --project demo-family-property \"vitest run --config vitest.rules.config.js\"",
+    "deploy:rules": "node scripts/firebase.js deploy --only firestore:rules --project prod"
   },
   "dependencies": {
     "firebase": "^13.1.0",
@@ -20,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
