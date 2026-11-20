@@ -28,9 +28,25 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 
 ## 4. Buildings and flats
 
-- Initial buildings (created by an admin during setup, not committed as seed data): **40 Gaj**, **25 Gaj**, **Jootey vaala 120 Gaj**, **Clinic 100 Gaj**, **New 120 Gaj**. Admins can add more (at least two more expected).
-- A flat has: permanent internal ID, building, floor label (Ground/First/…/custom), position (Left/Right/Front/Back/Single/custom), optional friendly name, electricity details including CA numbers. Example: `40 Gaj / First Floor / Left`.
-- More than one flat per floor is allowed. **Duplicate floor + position within a building is rejected.**
+- Buildings (from the owner's property sheet, 2026-11-20; entered through the app, never committed as seed data). Each has a permanent short code; names are editable:
+
+  | Code | Name | Flats | Use |
+  |---|---|---|---|
+  | B01 | 40 Gaj | 4 | Rented |
+  | B02 | Clinic 100 Gaj | 10 | Rented |
+  | B03 | Jootey vaala 120 Gaj | 3 | Rented |
+  | B04 | 25 Gaj | 3 | Rented |
+  | B05 | New 120 Gaj | 4 | Rented |
+  | B06 | Home | 6 | Own use |
+  | B07 | Office | 1 | Own use |
+
+  Admins can add more buildings.
+- **Own use:** buildings/flats not rented to tenants (Home, Office). Their electricity and expenses can be tracked, but they never show as vacant or appear in rent collection.
+- A flat has: permanent code, building, floor label (Ground/1st/…/custom), position (Left/Right/Front/Back/Single/number/custom), optional friendly name (e.g. Clinic, Godown, Hall), own-use flag, electricity connection (CA number) and notes. Example: `40 Gaj / 1st / Left`.
+- **Flat code** = `building code-floor key-position key`, e.g. `B01-G-1`, `B02-1-L`, `B03-G-1C`. More than one flat per floor is allowed. Because the code is built from floor + position, **a duplicate floor + position within a building is impossible**. Floor and position cannot change after creation; friendly name, own use, connection and notes can.
+- Jootey vaala ground floor has two units: positions **1C** (commercial) and **1D** (domestic).
+- **Electricity connections:** one record per CA number with type (domestic/commercial), sub-meter yes/no and the meter holder's name, phone and email. Several flats can share one CA number (main meter + sub-meters). Holder phone numbers are masked in lists and kept out of the audit log.
+- **Import:** admins can import buildings, flats and connections from the property sheet saved as CSV (Settings → Import), with a preview, a problem list and editable building names before anything is saved. Flats that already exist are skipped, never changed.
 - Occupancy is **derived from tenancy dates**, not a separately editable flag. Renaming must not break history.
 
 ## 5. Tenants and tenancies

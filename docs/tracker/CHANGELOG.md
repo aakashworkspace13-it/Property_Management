@@ -5,6 +5,30 @@ Generated entries come from `node scripts/build-tracker.js --log ... --why ...`.
 
 <!-- new entries go below this line, newest first -->
 
+## 2026-11-20 14:42 IST — Phase 3 complete and live
+
+- **Why:** Owner imported the real property sheet and confirmed 7 buildings and 32 flats are correct.
+- **Phases changed:** 3 · Buildings and flats
+- **Impact (dependent phases):** 4 · Tenants and tenancies; 5 · Collections; 6 · Electricity; 7 · Expenses; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 47%
+
+## 2026-11-20 00:34 IST — Phase 3 rules deployed
+
+- **Why:** Owner approved; npm run deploy:rules finished with Deploy complete.
+- **Phases changed:** 3 · Buildings and flats
+- **Impact (dependent phases):** 4 · Tenants and tenancies; 5 · Collections; 6 · Electricity; 7 · Expenses; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 45%
+
+## 2026-11-20 00:33 IST — Phase 3 built and verified on emulators
+
+- **Why:** Buildings, flats with codes, electricity connections, CSV import and search done; requirements updated from the owner's property sheet (7 buildings, 32 flats).
+- **Phases changed:** 3 · Buildings and flats
+- **Impact (dependent phases):** 4 · Tenants and tenancies; 5 · Collections; 6 · Electricity; 7 · Expenses; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 45%
+
 ## 2026-11-20 00:09 IST — Phase 2 complete and live
 
 - **Why:** Rules deployed to property-management-a5e84 and the owner signed in as Admin on the real project.

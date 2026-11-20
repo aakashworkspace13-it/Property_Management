@@ -127,6 +127,113 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ---------- shared field checks ----------
+
+    function optionalText(d, field, max) {
+      return !(field in d) || (d[field] is string && d[field].size() <= max);
+    }
+
+    // Create: stamped with the creator and server time, no update stamps yet.
+    function createStamped() {
+      let d = request.resource.data;
+      return d.createdBy == myEmail()
+        && d.createdAt == request.time
+        && !('updatedAt' in d) && !('updatedBy' in d);
+    }
+
+    // Update: creation stamps unchanged, update stamps set to the editor and server time.
+    function updateStamped() {
+      let d = request.resource.data;
+      return d.createdBy == resource.data.createdBy
+        && d.createdAt == resource.data.createdAt
+        && d.updatedBy == myEmail()
+        && d.updatedAt == request.time;
+    }
+
+    function unchanged(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny(fields) == false;
+    }
+
+    // ---------- buildings ----------
+    // Admins manage buildings; every member can read them. Never deleted.
+
+    function validBuilding(code) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['code', 'name', 'ownUse', 'createdAt', 'createdBy'])
+        && d.keys().hasOnly(['code', 'name', 'address', 'ownUse', 'notes', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && d.code == code
+        && code.matches('^[A-Z0-9]{1,10}$')
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+        && d.ownUse is bool
+        && optionalText(d, 'address', 300)
+        && optionalText(d, 'notes', 1000);
+    }
+
+    match /buildings/{code} {
+      allow read: if isMember();
+      allow create: if isAdmin() && validBuilding(code) && createStamped();
+      allow update: if isAdmin() && validBuilding(code) && updateStamped() && unchanged(['code']);
+      allow delete: if false;
+    }
+
+    // ---------- electricity connections (one per CA number) ----------
+
+    function validConnection(ca) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['caNumber', 'type', 'submeter', 'createdAt', 'createdBy'])
+        && d.keys().hasOnly(['caNumber', 'type', 'submeter', 'holderName', 'holderPhone', 'holderEmail', 'provider', 'notes',
+                             'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && d.caNumber == ca
+        && ca.matches('^[A-Z0-9_-]{1,30}$')
+        && d.type in ['domestic', 'commercial']
+        && d.submeter is bool
+        && optionalText(d, 'holderName', 80)
+        && optionalText(d, 'holderPhone', 20)
+        && optionalText(d, 'holderEmail', 120)
+        && optionalText(d, 'provider', 80)
+        && optionalText(d, 'notes', 1000);
+    }
+
+    match /connections/{ca} {
+      allow read: if isMember();
+      allow create: if isAdmin() && validConnection(ca) && createStamped();
+      allow update: if isAdmin() && validConnection(ca) && updateStamped() && unchanged(['caNumber']);
+      allow delete: if false;
+    }
+
+    // ---------- flats ----------
+    // The flat code (document ID) is building-floorKey-positionKey, so the same floor and position
+    // can never exist twice in a building. Identity fields never change after creation.
+
+    function validFlat(code) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['code', 'buildingId', 'floor', 'floorKey', 'floorOrder', 'position', 'positionKey', 'ownUse',
+                              'createdAt', 'createdBy'])
+        && d.keys().hasOnly(['code', 'buildingId', 'floor', 'floorKey', 'floorOrder', 'position', 'positionKey', 'friendlyName',
+                             'ownUse', 'connectionId', 'notes', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && d.code == code
+        && d.buildingId is string && d.floorKey is string && d.positionKey is string
+        && d.floorKey.matches('^[A-Z0-9]{1,12}$') && d.positionKey.matches('^[A-Z0-9]{1,12}$')
+        && code == d.buildingId + '-' + d.floorKey + '-' + d.positionKey
+        && existsAfter(/databases/$(database)/documents/buildings/$(d.buildingId))
+        && d.floor is string && d.floor.size() > 0 && d.floor.size() <= 40
+        && d.position is string && d.position.size() > 0 && d.position.size() <= 40
+        && d.floorOrder is int
+        && d.ownUse is bool
+        && optionalText(d, 'friendlyName', 80)
+        && optionalText(d, 'notes', 1000)
+        && (!('connectionId' in d) || d.connectionId == null
+            || (d.connectionId is string && existsAfter(/databases/$(database)/documents/connections/$(d.connectionId))));
+    }
+
+    match /flats/{code} {
+      allow read: if isMember();
+      allow create: if isAdmin() && validFlat(code) && createStamped();
+      allow update: if isAdmin() && validFlat(code) && updateStamped()
+        && unchanged(['code', 'buildingId', 'floor', 'floorKey', 'floorOrder', 'position', 'positionKey']);
+      allow delete: if false;
+    }
+
     // ---------- everything else ----------
     match /{document=**} {
       allow read, write: if false;

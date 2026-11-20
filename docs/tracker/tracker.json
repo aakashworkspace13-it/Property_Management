@@ -1,6 +1,6 @@
 {
   "project": "Family Property Manager",
-  "updated": "2026-11-20 00:09 IST",
+  "updated": "2026-11-20 14:42 IST",
   "statuses": [
     "Not started",
     "In progress",
@@ -9,14 +9,14 @@
     "Verified"
   ],
   "current": {
-    "phase": 3,
-    "step": "Start Phase 3: buildings and flats (add/edit buildings, flats with floor and position, duplicate check, occupancy).",
-    "comment": "Phase 2 is complete and live on the real Firebase project."
+    "phase": 4,
+    "step": "Start Phase 4: tenants and tenancies (tenant records, move-in with overlap check, departure with proration preview, openings, history).",
+    "comment": "Phase 3 is complete and live with the real buildings and flats."
   },
   "next": [
-    "Owner: commit Phase 2.",
-    "Phase 3: buildings and flats.",
-    "Owner: add the other family members in Settings → Family members when ready."
+    "Owner: commit Phase 3.",
+    "Phase 4: tenants and tenancies.",
+    "Owner (optional): add other family members in Settings → Family members."
   ],
   "criticalPath": [
     0,
@@ -234,49 +234,67 @@
       "id": 3,
       "name": "Buildings and flats",
       "outcome": "Building → floor → flat setup with derived occupancy.",
-      "status": "Not started",
+      "status": "Verified",
       "dependsOn": [
         2
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "",
+      "comment": "Live on property-management-a5e84 with the real buildings and flats. Rules deployed; import verified by the owner.",
       "tasks": [
         {
           "id": "3.1",
           "title": "Buildings: add/edit (admin only)",
-          "status": "Not started",
-          "comment": ""
+          "status": "Verified",
+          "comment": "Flats page → Add building / Edit. Permanent code, editable name, own-use flag."
         },
         {
           "id": "3.2",
-          "title": "Create the five initial buildings through the app",
-          "status": "Not started",
-          "comment": "Not as committed seed data."
+          "title": "Create the initial buildings and flats from the owner's sheet",
+          "status": "Verified",
+          "comment": "Owner imported the property sheet on the real project (7 buildings, 32 flats, 25 connections) and confirmed it looks right (2026-11-20)."
         },
         {
           "id": "3.3",
-          "title": "Flats: floor, position, friendly name, CA numbers",
-          "status": "Not started",
-          "comment": ""
+          "title": "Flats: floor, position, friendly name, CA connection, own use",
+          "status": "Verified",
+          "comment": "Add/edit forms on the Flats page; identity fields fixed after creation."
         },
         {
           "id": "3.4",
           "title": "Reject duplicate floor + position in a building",
-          "status": "Not started",
-          "comment": ""
+          "status": "Verified",
+          "comment": "Flat code = building-floor-position; checked live in the form, in the transaction and in Firestore rules."
         },
         {
           "id": "3.5",
           "title": "Occupancy derived from tenancy dates",
-          "status": "Not started",
-          "comment": ""
+          "status": "Done",
+          "comment": "occupancy() in src/lib/property.js with tests; shows Vacant / Own use until tenancies exist (Phase 4)."
         },
         {
           "id": "3.6",
           "title": "Hierarchy view and search",
-          "status": "Not started",
-          "comment": ""
+          "status": "Verified",
+          "comment": "Building → floor → flat with counts and status; search by building, flat, floor, name or CA number."
+        },
+        {
+          "id": "3.7",
+          "title": "Electricity connections per CA number (shared meters)",
+          "status": "Verified",
+          "comment": "connections/{CA}; holder phone masked; holder details kept out of the audit log."
+        },
+        {
+          "id": "3.8",
+          "title": "CSV import with preview (Settings → Import)",
+          "status": "Verified",
+          "comment": "Dry run on the owner's sheet: 7 buildings, 32 flats, 25 connections, 0 problems. Browser-tested on the emulators with synthetic data."
+        },
+        {
+          "id": "3.9",
+          "title": "Security rules + tests for buildings, flats, connections",
+          "status": "Done",
+          "comment": "11 new rules tests (27 total), all passing. Deployed 2026-11-20."
         }
       ]
     },
@@ -819,6 +837,16 @@
       ],
       "status": "Resolved",
       "comment": "Project property-management-a5e84 created; rules deployed 2026-11-20."
+    },
+    {
+      "id": "B7",
+      "title": "Deploy Phase 3 security rules to property-management-a5e84",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "3.2"
+      ],
+      "status": "Resolved",
+      "comment": "Rules deployed 2026-11-20 (Deploy complete)."
     }
   ]
 }
