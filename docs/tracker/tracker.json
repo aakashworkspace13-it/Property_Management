@@ -1,6 +1,6 @@
 {
   "project": "Family Property Manager",
-  "updated": "2026-11-20 14:42 IST",
+  "updated": "2026-11-20 15:08 IST",
   "statuses": [
     "Not started",
     "In progress",
@@ -10,13 +10,14 @@
   ],
   "current": {
     "phase": 4,
-    "step": "Start Phase 4: tenants and tenancies (tenant records, move-in with overlap check, departure with proration preview, openings, history).",
-    "comment": "Phase 3 is complete and live with the real buildings and flats."
+    "step": "Owner confirms Blaze + Storage are on; then deploy Firestore/Storage rules and the bucket CORS setting; then the owner enters 2 TEST tenants.",
+    "comment": "Tenants, tenancies, documents and move-out are built and verified on the emulators."
   },
   "next": [
-    "Owner: commit Phase 3.",
-    "Phase 4: tenants and tenancies.",
-    "Owner (optional): add other family members in Settings → Family members."
+    "Owner: upgrade to Blaze, add a budget alert, turn on Storage (B3).",
+    "Deploy Firestore + Storage rules and bucket CORS (needs owner OK).",
+    "Owner: enter 2 TEST tenants with the provided sample values.",
+    "Owner: commit Phases 3 and 4."
   ],
   "criticalPath": [
     0,
@@ -301,51 +302,69 @@
     {
       "id": 4,
       "name": "Tenants and tenancies",
-      "outcome": "Tenant records, move-in, departure with proration preview, history.",
-      "status": "Not started",
+      "outcome": "One-time tenant entry (contacts, members, vehicles, ID proof, agreement), move-in with one active tenant per flat, move-out with proration preview, tenancy history.",
+      "status": "In progress",
       "dependsOn": [
         1,
         3
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "",
+      "comment": "Built and verified on the emulators. Remaining: Blaze/Storage on the live project, deploy rules + CORS, then the owner enters 2 TEST tenants.",
       "tasks": [
         {
           "id": "4.1",
-          "title": "Tenant records: contacts, household, vehicles, notes",
-          "status": "Not started",
-          "comment": ""
+          "title": "Tenant records: name, phones, emergency contact, members count, two/four-wheeler counts, notes",
+          "status": "Verified",
+          "comment": "Add tenant form with validation (required fields, Indian mobile numbers); checked on the emulators."
         },
         {
           "id": "4.2",
-          "title": "Mask phone and ID numbers in lists",
-          "status": "Not started",
-          "comment": ""
+          "title": "ID proof: type + full number (masked in lists, never in audit) + photo/PDF upload",
+          "status": "Verified",
+          "comment": "Full ID number stored; masked (•••• 1234) with a Show button on the tenant page; hidden in the audit log. Photo/PDF upload checked on the emulators."
         },
         {
           "id": "4.3",
-          "title": "Start tenancy with overlap check (transaction)",
-          "status": "Not started",
-          "comment": ""
+          "title": "Start tenancy: flat, move-in, monthly rent, one active tenant per flat (transaction + rules)",
+          "status": "Verified",
+          "comment": "Tenant + tenancy + occupancy lock written together; rules block a second active tenant and own-use flats."
         },
         {
           "id": "4.4",
-          "title": "Departure: proration preview and explicit adjustment",
-          "status": "Not started",
-          "comment": ""
+          "title": "Move-out with proration preview (leaving day included)",
+          "status": "Verified",
+          "comment": "Move-out preview (e.g. 15 of 30 days of Rs 12,000 = Rs 6,000), leaving day included; future leaving dates show \"Leaving on\". Charge adjustments come with Phase 5."
         },
         {
           "id": "4.5",
-          "title": "Opening balances with first-period preview",
-          "status": "Not started",
-          "comment": "Handoff concern #2."
+          "title": "Track rent from: first-period preview",
+          "status": "Verified",
+          "comment": "Defaults to the current rent period for existing tenants; preview shows due day and first period."
         },
         {
           "id": "4.6",
-          "title": "Tenancy history per flat",
+          "title": "Tenancy history per flat; flat detail page",
+          "status": "Verified",
+          "comment": "Flat detail page with current tenant, move-out and past tenants; Flats list shows tenant names."
+        },
+        {
+          "id": "4.7",
+          "title": "Agreement dates + agreement upload",
+          "status": "Verified",
+          "comment": "Agreement dates with 30-day expiry warning; agreement upload and later edits."
+        },
+        {
+          "id": "4.8",
+          "title": "Private document storage (Firebase Storage rules + tests)",
+          "status": "Done",
+          "comment": "storage.rules + 12 new rules tests (39 total). Live use needs Blaze + Storage (B3), rules deploy and bucket CORS (cors.json) for opening files."
+        },
+        {
+          "id": "4.9",
+          "title": "Two TEST tenants entered by the owner through the form",
           "status": "Not started",
-          "comment": ""
+          "comment": "Owner request; fake data clearly marked TEST."
         }
       ]
     },
@@ -409,6 +428,12 @@
           "title": "Tenancy ledger view",
           "status": "Not started",
           "comment": ""
+        },
+        {
+          "id": "5.9",
+          "title": "Opening balances for existing tenants (with note)",
+          "status": "Not started",
+          "comment": "Moved from Phase 4 (needs the ledger)."
         }
       ]
     },
@@ -802,11 +827,14 @@
       "id": "B3",
       "title": "Firebase Blaze plan with budget alert",
       "blocksPhases": [
+        4,
         8
       ],
-      "blocksTasks": [],
+      "blocksTasks": [
+        "4.8"
+      ],
       "status": "Open",
-      "comment": "Required for Firebase Storage on new projects; expected cost ₹0 at family scale."
+      "comment": "Owner is upgrading to Blaze and turning on Storage (2026-11-20). Needed for ID proof / agreement uploads."
     },
     {
       "id": "B4",

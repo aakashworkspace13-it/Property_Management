@@ -5,6 +5,7 @@ import { todayInKolkata } from '../../lib/money/index.js'
 import { floorOrder, occupancy, sortFlats } from '../../lib/property.js'
 import { createBuilding, createFlat, updateBuilding, updateFlat } from '../../services/property.js'
 import { usePropertyData } from './usePropertyData.js'
+import { useTenancyData } from '../tenants/useTenancyData.js'
 import { BuildingForm, FlatForm } from './forms.jsx'
 
 const STATUS = {
@@ -23,15 +24,18 @@ function matches(query, ...values) {
   return values.some((v) => String(v ?? '').toLowerCase().includes(query))
 }
 
-function FlatRow({ flat, connection, status, isAdmin, onEdit }) {
+function FlatRow({ flat, connection, status, tenantName, isAdmin, onEdit }) {
   const s = STATUS[status]
   return (
     <li className="flat-row">
       <div className="flat-main">
         <div>
-          <strong>{flat.position}</strong>
-          {flat.friendlyName && <span className="muted"> — {flat.friendlyName}</span>}
+          <Link to={`/flats/${flat.code}`} className="flat-link">
+            <strong>{flat.position}</strong>
+            {flat.friendlyName && <span className="muted"> — {flat.friendlyName}</span>}
+          </Link>
           <span className={s.className}>{s.label}</span>
+          {tenantName && <span className="small"> {tenantName}</span>}
         </div>
         <div className="muted small">
           {flat.code}
@@ -53,10 +57,10 @@ function FlatRow({ flat, connection, status, isAdmin, onEdit }) {
   )
 }
 
-function BuildingCard({ building, flats, connections, isAdmin, today, query, editing, setEditing, actor }) {
+function BuildingCard({ building, flats, connections, tenancies, tenantNames, isAdmin, today, query, editing, setEditing, actor }) {
   const byCa = new Map(connections.map((c) => [c.caNumber, c]))
   const visible = flats.filter((f) =>
-    matches(query, building.name, building.code, f.code, f.floor, f.position, f.friendlyName, f.connectionId),
+    matches(query, building.name, building.code, f.code, f.floor, f.position, f.friendlyName, f.connectionId, tenantNames.get(f.code)),
   )
   if (query && visible.length === 0 && !matches(query, building.name, building.code)) return null
 
@@ -66,7 +70,7 @@ function BuildingCard({ building, flats, connections, isAdmin, today, query, edi
     floors.get(f.floor).push(f)
   }
   const floorList = [...floors.entries()].sort((a, b) => floorOrder(a[0]) - floorOrder(b[0]))
-  const statuses = flats.map((f) => occupancy(f, [], today))
+  const statuses = flats.map((f) => occupancy(f, tenancies, today))
   const counts = {
     total: flats.length,
     vacant: statuses.filter((s) => s === 'vacant').length,
@@ -83,6 +87,7 @@ function BuildingCard({ building, flats, connections, isAdmin, today, query, edi
           </h2>
           <div className="muted small">
             {counts.total} flat{counts.total === 1 ? '' : 's'}
+            {counts.total - counts.vacant - counts.ownUse > 0 && ` · ${counts.total - counts.vacant - counts.ownUse} occupied`}
             {counts.vacant > 0 && ` · ${counts.vacant} vacant`}
             {counts.ownUse > 0 && ` · ${counts.ownUse} own use`}
             {building.address && ` · ${building.address}`}
@@ -135,7 +140,8 @@ function BuildingCard({ building, flats, connections, isAdmin, today, query, edi
                   key={f.code}
                   flat={f}
                   connection={byCa.get(f.connectionId)}
-                  status={occupancy(f, [], today)}
+                  status={occupancy(f, tenancies, today)}
+                  tenantName={tenantNames.get(f.code)}
                   isAdmin={isAdmin}
                   onEdit={() => setEditing({ type: 'flat', id: f.code })}
                 />
@@ -150,7 +156,9 @@ function BuildingCard({ building, flats, connections, isAdmin, today, query, edi
 
 export default function FlatsPage() {
   const { user, isAdmin } = useAuth()
-  const { buildings, flats, connections, error, loading } = usePropertyData()
+  const { buildings, flats, connections, error, loading: propertyLoading } = usePropertyData()
+  const { tenants, tenancies, loading: tenancyLoading } = useTenancyData()
+  const loading = propertyLoading || tenancyLoading
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState(null) // { type: 'building'|'newBuilding'|'newFlat'|'flat', id }
   const today = todayInKolkata()
@@ -163,13 +171,24 @@ export default function FlatsPage() {
       .map((b) => ({ building: b, flats: sorted.filter((f) => f.buildingId === b.code) }))
   }, [buildings, flats, loading])
 
+  const tenantNames = useMemo(() => {
+    const names = new Map()
+    for (const t of tenancies ?? []) {
+      if (t.moveOut && t.moveOut < today) continue
+      const tenant = tenants?.find((x) => x.id === t.tenantId)
+      if (tenant) names.set(t.flatId, tenant.name)
+    }
+    return names
+  }, [tenants, tenancies, today])
+
   const q = query.trim().toLowerCase()
   const totals = loading
     ? null
     : {
         buildings: buildings.length,
         flats: flats.length,
-        vacant: flats.filter((f) => occupancy(f, [], today) === 'vacant').length,
+        occupied: flats.filter((f) => occupancy(f, tenancies, today) === 'occupied').length,
+        vacant: flats.filter((f) => occupancy(f, tenancies, today) === 'vacant').length,
         ownUse: flats.filter((f) => f.ownUse).length,
       }
 
@@ -189,7 +208,7 @@ export default function FlatsPage() {
 
       {totals && (
         <p className="muted">
-          {totals.buildings} buildings · {totals.flats} flats · {totals.vacant} vacant · {totals.ownUse} own use
+          {totals.buildings} buildings · {totals.flats} flats · {totals.occupied} occupied · {totals.vacant} vacant · {totals.ownUse} own use
         </p>
       )}
 
@@ -201,7 +220,7 @@ export default function FlatsPage() {
         <input
           className="search"
           type="search"
-          placeholder="Search building, flat, floor, name or CA number"
+          placeholder="Search building, flat, tenant, name or CA number"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search flats"
@@ -228,6 +247,8 @@ export default function FlatsPage() {
           building={building}
           flats={list}
           connections={connections}
+          tenancies={tenancies}
+          tenantNames={tenantNames}
           isAdmin={isAdmin}
           today={today}
           query={q}
@@ -237,11 +258,7 @@ export default function FlatsPage() {
         />
       ))}
 
-      {!loading && (
-        <p className="muted small">
-          Occupancy comes from tenancy dates. Tenants are added in Phase 4, so every rentable flat shows as vacant for now.
-        </p>
-      )}
+      {!loading && <p className="muted small">Tap a flat to see its tenant, add a tenant or record a move-out.</p>}
     </section>
   )
 }

@@ -5,6 +5,22 @@ Generated entries come from `node scripts/build-tracker.js --log ... --why ...`.
 
 <!-- new entries go below this line, newest first -->
 
+## 2026-11-20 15:08 IST — Phase 4 built and verified on emulators
+
+- **Why:** Tenant form, tenancies with one-tenant-per-flat lock, ID/agreement uploads, move-out preview, history; 39 rules tests and 91 unit tests pass.
+- **Phases changed:** 4 · Tenants and tenancies
+- **Impact (dependent phases):** 5 · Collections; 6 · Electricity; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 54%
+
+## 2026-11-20 14:56 IST — Phase 4 planned with owner field choices
+
+- **Why:** Owner chose tenant fields, Blaze for uploads, TEST tenants in the live app; opening balances moved to Phase 5.
+- **Phases changed:** 4 · Tenants and tenancies; 5 · Collections
+- **Impact (dependent phases):** 6 · Electricity; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 44%
+
 ## 2026-11-20 14:42 IST — Phase 3 complete and live
 
 - **Why:** Owner imported the real property sheet and confirmed 7 buildings and 32 flats are correct.

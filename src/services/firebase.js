@@ -8,6 +8,7 @@
 import { initializeApp } from 'firebase/app'
 import { connectAuthEmulator, getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
+import { connectStorageEmulator, getStorage } from 'firebase/storage'
 
 const env = import.meta.env
 const hasProject = Boolean(env.VITE_FIREBASE_PROJECT_ID && env.VITE_FIREBASE_API_KEY)
@@ -26,17 +27,25 @@ const firebaseConfig = hasProject && !usingEmulators
       appId: env.VITE_FIREBASE_APP_ID,
     }
   : // Emulator-only demo project: no real data, no network calls to Google.
-    { apiKey: 'demo-key', authDomain: 'localhost', projectId: 'demo-family-property', appId: 'demo-app' }
+    {
+      apiKey: 'demo-key',
+      authDomain: 'localhost',
+      projectId: 'demo-family-property',
+      storageBucket: 'demo-family-property.appspot.com',
+      appId: 'demo-app',
+    }
 
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
+export const storage = getStorage(app)
 
 if (usingEmulators) {
   // Same host name as the app, so the browser treats the emulator sign-in page as the same site
   // (otherwise redirect sign-in results are lost to storage partitioning).
   connectAuthEmulator(auth, `http://${window.location.hostname}:9099`, { disableWarnings: true })
   connectFirestoreEmulator(db, '127.0.0.1', 8080)
+  connectStorageEmulator(storage, '127.0.0.1', 9199)
 }
 
 export const googleProvider = new GoogleAuthProvider()

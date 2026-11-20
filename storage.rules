@@ -1,0 +1,36 @@
+rules_version = '2';
+
+// Family Property Manager — Firebase Storage rules.
+// Tenant documents (ID proofs, agreements) are private: only active family members can read
+// them, files can only be added (never replaced or deleted from the app), and only JPG, PNG
+// or PDF up to 15 MB. Membership is checked against Firestore (members/{email}).
+// Tested in tests/rules/storage.rules.test.js (npm run test:rules).
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isMember() {
+      return request.auth != null
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true
+        && firestore.exists(/databases/(default)/documents/members/$(request.auth.token.email.lower()))
+        && firestore.get(/databases/(default)/documents/members/$(request.auth.token.email.lower())).data.active == true;
+    }
+
+    match /tenants/{tenantId}/{documentId} {
+      allow read: if isMember();
+      allow create: if isMember()
+        && resource == null // never replace an existing file
+        && request.resource.size > 0
+        && request.resource.size <= 15 * 1024 * 1024
+        && request.resource.contentType in ['image/jpeg', 'image/png', 'application/pdf']
+        && firestore.exists(/databases/(default)/documents/tenants/$(tenantId));
+      allow update, delete: if false;
+    }
+
+    // Everything else is closed.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

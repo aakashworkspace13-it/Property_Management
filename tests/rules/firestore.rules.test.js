@@ -183,7 +183,7 @@ describe('audit log', () => {
 describe('everything else', () => {
   it('is denied, even to admins', async () => {
     await seed()
-    await assertFails(setDoc(doc(dbFor(OWNER), 'tenants/t1'), { name: 'x' }))
-    await assertFails(getDoc(doc(dbFor(OWNER), 'tenants/t1')))
+    await assertFails(setDoc(doc(dbFor(OWNER), 'secrets/s1'), { name: 'x' }))
+    await assertFails(getDoc(doc(dbFor(OWNER), 'secrets/s1')))
   })
 })

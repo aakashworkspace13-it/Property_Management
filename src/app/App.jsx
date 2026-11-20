@@ -3,6 +3,9 @@ import Layout from './Layout.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 import DashboardPage from '../features/dashboard/DashboardPage.jsx'
 import FlatsPage from '../features/flats/FlatsPage.jsx'
+import FlatDetailPage from '../features/flats/FlatDetailPage.jsx'
+import AddTenantPage from '../features/tenants/AddTenantPage.jsx'
+import TenantPage from '../features/tenants/TenantPage.jsx'
 import CollectionsPage from '../features/collections/CollectionsPage.jsx'
 import ExpensesPage from '../features/expenses/ExpensesPage.jsx'
 import DocumentsPage from '../features/documents/DocumentsPage.jsx'
@@ -16,6 +19,9 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<DashboardPage />} />
         <Route path="flats" element={<FlatsPage />} />
+        <Route path="flats/:code" element={<FlatDetailPage />} />
+        <Route path="flats/:code/add-tenant" element={<AddTenantPage />} />
+        <Route path="tenants/:id" element={<TenantPage />} />
         <Route path="collections" element={<CollectionsPage />} />
         <Route path="expenses" element={<ExpensesPage />} />
         <Route path="documents" element={<DocumentsPage />} />
