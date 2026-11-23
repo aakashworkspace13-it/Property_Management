@@ -8,8 +8,9 @@ import { agreementStatus } from '../../lib/tenants.js'
 import { recordMoveOut } from '../../services/tenants.js'
 import { activeTenancy, useTenancyData } from '../tenants/useTenancyData.js'
 import { usePropertyData } from './usePropertyData.js'
+import { useCollectionData } from '../collections/useCollectionData.js'
 
-function MoveOut({ tenancy, tenantName, actor, onDone }) {
+function MoveOut({ tenancy, tenantName, charges, actor, onDone }) {
   const [date, setDate] = useState(todayInKolkata())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
@@ -17,8 +18,8 @@ function MoveOut({ tenancy, tenantName, actor, onDone }) {
   let preview = null
   let previewError = null
   try {
-    // Charges are created in Phase 5; until then the preview shows the prorated final rent.
-    preview = departurePreview({ id: tenancy.id, moveIn: tenancy.moveIn, monthlyRent: tenancy.monthlyRent }, date, [])
+    const rentCharges = charges.filter((c) => c.tenancyId === tenancy.id && c.account === 'rent')
+    preview = departurePreview({ id: tenancy.id, moveIn: tenancy.moveIn, monthlyRent: tenancy.monthlyRent }, date, rentCharges)
   } catch (e) {
     previewError = e.message
   }
@@ -27,7 +28,7 @@ function MoveOut({ tenancy, tenantName, actor, onDone }) {
     setBusy(true)
     setError(null)
     try {
-      await recordMoveOut(actor, tenancy, date)
+      await recordMoveOut(actor, tenancy, date, charges)
       onDone()
     } catch (e) {
       setError(e.code === 'permission-denied' ? 'The database refused this (permission denied).' : e.message)
@@ -50,8 +51,27 @@ function MoveOut({ tenancy, tenantName, actor, onDone }) {
           <br />
           Rent for this last period: {formatINR(preview.monthlyRent)} × {preview.occupiedDays} ÷ {preview.periodDays} ={' '}
           <strong>{formatINR(preview.finalCharge)}</strong>
+          {preview.issuedChargeId && preview.adjustment !== 0 && (
+            <>
+              <br />
+              Rent of {formatINR(preview.issuedAmount)} was already charged for this period, so an adjustment of{' '}
+              <strong>{formatINR(preview.adjustment)}</strong> is added. The original charge stays in the ledger.
+            </>
+          )}
+          {preview.futureReversals.length > 0 && (
+            <>
+              <br />
+              {preview.futureReversals.length} later period(s) already charged will be reversed.
+            </>
+          )}
+          {preview.needsManualReview && (
+            <>
+              <br />
+              <span className="error">This period is covered by an opening balance; check the ledger after saving.</span>
+            </>
+          )}
           <br />
-          <span className="muted">The tenancy and its history stay in the app; the flat becomes vacant.</span>
+          <span className="muted">The tenancy and its history stay in the app; the flat becomes vacant after the leaving day.</span>
         </div>
       )}
       <div className="form-actions">
@@ -72,11 +92,12 @@ export default function FlatDetailPage() {
   const { user } = useAuth()
   const { buildings, flats, connections, loading } = usePropertyData()
   const { tenants, tenancies, loading: tLoading, error } = useTenancyData()
+  const { charges, loading: cLoading } = useCollectionData()
   const [movingOut, setMovingOut] = useState(false)
   const today = todayInKolkata()
 
   if (error) return <p className="error">{error}</p>
-  if (loading || tLoading) return <p className="muted">Loading…</p>
+  if (loading || tLoading || cLoading) return <p className="muted">Loading…</p>
   const flat = flats.find((f) => f.code === code)
   if (!flat) return <p className="error">Flat {code} not found.</p>
   const building = buildings.find((b) => b.code === flat.buildingId)
@@ -130,6 +151,9 @@ export default function FlatDetailPage() {
                   <p className="pill warn">Leaving on {current.moveOut} (move-out recorded)</p>
                 )}
               </div>
+              <Link className="button small-button" to={`/tenancies/${current.id}`}>
+                Rent ledger
+              </Link>
               {!movingOut && !current.moveOut && (
                 <button type="button" className="button small-button" onClick={() => setMovingOut(true)}>
                   Record move-out
@@ -137,7 +161,7 @@ export default function FlatDetailPage() {
               )}
             </div>
             {movingOut && (
-              <MoveOut tenancy={current} tenantName={currentTenant?.name ?? 'tenant'} actor={user} onDone={() => setMovingOut(false)} />
+              <MoveOut tenancy={current} tenantName={currentTenant?.name ?? 'tenant'} charges={charges} actor={user} onDone={() => setMovingOut(false)} />
             )}
           </>
         )}

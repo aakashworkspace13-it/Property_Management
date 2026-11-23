@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import Field from '../../components/Field.jsx'
 import { useAuth } from '../auth/auth-context.js'
-import { formatINR, todayInKolkata } from '../../lib/money/index.js'
+import { addDays, anniversary, formatINR, todayInKolkata } from '../../lib/money/index.js'
 import { flatReference } from '../../lib/property.js'
-import { agreementStatus, checkUpload, formatMobile, idTypeLabel, maskIdNumber, validateTenant } from '../../lib/tenants.js'
-import { openDocument, updateTenancyDetails, updateTenant, uploadDocument, watchDocuments } from '../../services/tenants.js'
+import { agreementStatus, checkUpload, formatMobile, idTypeLabel, maskIdNumber, validateRenewal, validateTenant } from '../../lib/tenants.js'
+import { renewAgreement, updateTenancyDetails, updateTenant, watchDocuments } from '../../services/tenants.js'
+import { getDriveToken, openDriveDocument, uploadToDrive } from '../../services/drive.js'
+import { useMembers } from '../settings/useMembers.js'
 import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from './useTenancyData.js'
 import FilePicker from './FilePicker.jsx'
@@ -33,6 +35,7 @@ function Detail({ label, children }) {
 }
 
 function Documents({ tenant, tenancyId, actor }) {
+  const { members } = useMembers()
   const [docs, setDocs] = useState(null)
   const [files, setFiles] = useState([])
   const [kind, setKind] = useState('id-proof')
@@ -46,8 +49,11 @@ function Documents({ tenant, tenancyId, actor }) {
     setBusy(true)
     setError(null)
     try {
-      for (const file of files) {
-        await uploadDocument(actor, { tenantId: tenant.id, tenancyId, kind, label: kind === 'agreement' ? 'Agreement' : 'ID proof', file })
+      const token = await getDriveToken() // first, so the Google pop-up opens from the click
+      const base = kind === 'agreement' ? 'Agreement' : 'ID proof'
+      for (const [i, file] of files.entries()) {
+        const label = files.length > 1 ? `${base} ${i + 1}` : base
+        await uploadToDrive(actor, token, { tenant, tenancyId, kind, label, file, members: members ?? [] })
       }
       setFiles([])
     } catch (e) {
@@ -57,13 +63,9 @@ function Documents({ tenant, tenancyId, actor }) {
     }
   }
 
-  async function open(d) {
+  function open(d) {
     setError(null)
-    try {
-      await openDocument(d)
-    } catch (e) {
-      setError(`Could not open the file: ${friendly(e)}`)
-    }
+    openDriveDocument(d)
   }
 
   const sorted = [...(docs ?? [])].sort((a, b) => (b.uploadedAt?.seconds ?? 0) - (a.uploadedAt?.seconds ?? 0))
@@ -81,7 +83,7 @@ function Documents({ tenant, tenancyId, actor }) {
               <div>
                 <strong>{d.label || (d.kind === 'agreement' ? 'Agreement' : 'ID proof')}</strong>
                 <div className="muted small">
-                  {d.fileName} · {d.contentType === 'application/pdf' ? 'PDF' : 'Photo'} · uploaded by {d.uploadedBy}
+                  {d.fileName} · {d.contentType === 'application/pdf' ? 'PDF' : 'Photo'} · in {d.uploadedBy}'s Google Drive
                   {d.uploadedAt?.toDate && ` on ${d.uploadedAt.toDate().toLocaleDateString('en-IN')}`}
                 </div>
               </div>
@@ -94,6 +96,7 @@ function Documents({ tenant, tenancyId, actor }) {
       )}
       <div className="inline-form">
         <h3>Add files</h3>
+        <p className="muted small">Saved in your Google Drive (Property Manager folder) and shared view-only with the family.</p>
         <label className="field">
           <span className="field-label">Type</span>
           <select value={kind} onChange={(e) => setKind(e.target.value)}>
@@ -204,6 +207,55 @@ function EditAgreement({ tenancy, actor, onDone }) {
   )
 }
 
+function RenewAgreement({ tenancy, actor, onDone }) {
+  const nextStart = tenancy.agreementEnd ? addDays(tenancy.agreementEnd, 1) : todayInKolkata()
+  const [values, setValues] = useState({ start: nextStart, end: addDays(anniversary(nextStart, 12), -1) })
+  const [error, setError] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const bind = (k) => ({ value: values[k], onChange: (e) => setValues((v) => ({ ...v, [k]: e.target.value })) })
+
+  async function save(event) {
+    event.preventDefault()
+    const { value, errors } = validateRenewal(tenancy, values)
+    if (Object.keys(errors).length) return setError(Object.values(errors).join(' '))
+    setBusy(true)
+    try {
+      await renewAgreement(actor, tenancy, value)
+      onDone()
+    } catch (e) {
+      setError(friendly(e))
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className="form panel-form" onSubmit={save}>
+      <h3>Renew agreement</h3>
+      <p className="muted small">
+        The current agreement ({tenancy.agreementStart || '?'} to {tenancy.agreementEnd || '?'}) is kept in the history. Rent does not
+        change here.
+      </p>
+      <div className="form-row">
+        <Field label="New start">
+          <input type="date" {...bind('start')} />
+        </Field>
+        <Field label="New end">
+          <input type="date" {...bind('end')} />
+        </Field>
+      </div>
+      <div className="form-actions">
+        <button type="submit" className="button primary" disabled={busy}>
+          {busy ? 'Saving…' : 'Renew'}
+        </button>
+        <button type="button" className="button" onClick={onDone} disabled={busy}>
+          Cancel
+        </button>
+      </div>
+      {error && <p className="error">{error}</p>}
+    </form>
+  )
+}
+
 export default function TenantPage() {
   const { id } = useParams()
   const location = useLocation()
@@ -281,11 +333,21 @@ export default function TenantPage() {
                   <span className={t.moveOut ? 'pill muted-pill' : 'pill'}>{t.moveOut ? 'Moved out' : 'Current'}</span>
                   {!t.moveOut && <span className={a.className}>{a.label}</span>}
                 </div>
-                {editing !== t.id && (
-                  <button type="button" className="button small-button" onClick={() => setEditing(t.id)}>
-                    Edit agreement
-                  </button>
-                )}
+                <div className="member-actions">
+                  <Link className="button small-button" to={`/tenancies/${t.id}`}>
+                    Rent ledger
+                  </Link>
+                  {editing !== t.id && !t.moveOut && (
+                    <button type="button" className="button small-button" onClick={() => setEditing(`renew-${t.id}`)}>
+                      Renew agreement
+                    </button>
+                  )}
+                  {editing !== t.id && (
+                    <button type="button" className="button small-button" onClick={() => setEditing(t.id)}>
+                      Edit agreement
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="detail-grid">
                 <Detail label="Monthly rent">{formatINR(t.monthlyRent)}</Detail>
@@ -297,7 +359,13 @@ export default function TenantPage() {
                 </Detail>
               </div>
               {t.notes && <p className="muted small">{t.notes}</p>}
+              {t.agreementHistory?.length > 0 && (
+                <p className="muted small">
+                  Earlier agreements: {[...t.agreementHistory].reverse().map((h) => `${h.start || '?'} to ${h.end || '?'}`).join(' · ')}
+                </p>
+              )}
               {editing === t.id && <EditAgreement tenancy={t} actor={user} onDone={() => setEditing(null)} />}
+              {editing === `renew-${t.id}` && <RenewAgreement tenancy={t} actor={user} onDone={() => setEditing(null)} />}
             </div>
           )
         })}

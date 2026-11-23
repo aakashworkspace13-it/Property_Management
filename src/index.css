@@ -686,3 +686,236 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* Collections */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+}
+
+.stat strong {
+  font-size: 1.3rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.toolbar .search {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.segmented button {
+  min-height: 40px;
+  padding: 0.25rem 0.9rem;
+  border: none;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.segmented button.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.collection-row {
+  margin-bottom: 0.75rem;
+}
+
+.collection-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.collection-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.notice.calm {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.plain-list {
+  margin: 0.25rem 0;
+  padding-left: 1.2rem;
+}
+
+.member-list li > .panel-form {
+  flex-basis: 100%;
+}
+
+/* Electricity */
+.wide-form {
+  max-width: 900px;
+}
+
+.reading-row {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.reading-row:first-of-type {
+  border-top: none;
+}
+
+.group-title {
+  font-size: 1rem;
+  color: var(--muted);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.flat-chip {
+  display: inline-block;
+  margin-right: 0.75rem;
+}
+
+.inline-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.inline-actions input {
+  min-height: 36px;
+}
+
+.electricity-line {
+  border-top: 1px dashed var(--border);
+  padding-top: 0.4rem;
+}
+
+/* Expenses and monthly sheet */
+.toolbar .field {
+  min-width: 150px;
+}
+
+.full-row {
+  flex-basis: 100%;
+  margin: 0.25rem 0 0;
+}
+
+.table.sheet th {
+  white-space: nowrap;
+}
+
+.table.sheet td {
+  white-space: nowrap;
+}
+
+/* Dashboard */
+.stat-link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.stat-link:hover {
+  border-color: var(--accent);
+}
+
+.add-reminder {
+  margin: 0.25rem 0 0.75rem;
+  width: 100%;
+}
+
+.add-reminder input:first-child {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* Reports */
+.report-tabs {
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.report-table h2 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table tfoot td {
+  border-top: 2px solid var(--border);
+}
+
+.print-only {
+  display: none;
+}
+
+/* Print / Save as PDF: only the report itself */
+@media print {
+  .sidebar,
+  .bottom-bar,
+  .no-print {
+    display: none !important;
+  }
+
+  .content {
+    margin: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  .print-only {
+    display: block;
+    font-size: 1.2rem;
+  }
+
+  :root {
+    background: #fff;
+    color: #000;
+  }
+
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .table-wrap {
+    overflow: visible;
+  }
+
+  .report-table {
+    break-inside: avoid-page;
+  }
+}

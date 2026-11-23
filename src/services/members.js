@@ -33,13 +33,31 @@ const setupRef = () => doc(db, 'config', 'setup')
 const memberRef = (email) => doc(db, 'members', memberId(email))
 
 /** Calls back with true/false whenever the owner setup exists or not. */
+// "Not found" from the offline cache is not trusted (the device may just be offline or its
+// sign-in may have expired); only the server can say that a record does not exist.
 export function watchSetup(onChange, onError) {
-  return onSnapshot(setupRef(), (snap) => onChange(snap.exists()), onError)
+  return onSnapshot(
+    setupRef(),
+    { includeMetadataChanges: true },
+    (snap) => {
+      if (!snap.exists() && snap.metadata.fromCache) return
+      onChange(snap.exists())
+    },
+    onError,
+  )
 }
 
 /** Calls back with the member record for `email`, or null. */
 export function watchMember(email, onChange, onError) {
-  return onSnapshot(memberRef(email), (snap) => onChange(snap.exists() ? snap.data() : null), onError)
+  return onSnapshot(
+    memberRef(email),
+    { includeMetadataChanges: true },
+    (snap) => {
+      if (!snap.exists() && snap.metadata.fromCache) return
+      onChange(snap.exists() ? snap.data() : null)
+    },
+    onError,
+  )
 }
 
 /** Calls back with all members, sorted by name. */

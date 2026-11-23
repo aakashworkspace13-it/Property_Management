@@ -9,6 +9,8 @@ export {
   assertDate,
   compareDates,
   daysInclusive,
+  maxDate,
+  minDate,
   todayInKolkata,
 } from './dates.js'
 export {

@@ -1,6 +1,6 @@
 {
   "project": "Family Property Manager",
-  "updated": "2026-11-20 15:08 IST",
+  "updated": "2026-11-23 12:34 IST",
   "statuses": [
     "Not started",
     "In progress",
@@ -9,15 +9,15 @@
     "Verified"
   ],
   "current": {
-    "phase": 4,
-    "step": "Owner confirms Blaze + Storage are on; then deploy Firestore/Storage rules and the bucket CORS setting; then the owner enters 2 TEST tenants.",
-    "comment": "Tenants, tenancies, documents and move-out are built and verified on the emulators."
+    "phase": 11,
+    "step": "Owner reviews the app and lists changes; publish only when asked.",
+    "comment": "All phases built; Google Drive documents verified live."
   },
   "next": [
-    "Owner: upgrade to Blaze, add a budget alert, turn on Storage (B3).",
-    "Deploy Firestore + Storage rules and bucket CORS (needs owner OK).",
-    "Owner: enter 2 TEST tenants with the provided sample values.",
-    "Owner: commit Phases 3 and 4."
+    "Owner: review the app and list any changes.",
+    "Owner: commit Phases 5 onwards.",
+    "Owner: upgrade to Blaze, then deploy the 9 AM push function and add the web-push key (B3, B11).",
+    "Publish to Firebase Hosting only when the owner asks (B12)."
   ],
   "criticalPath": [
     0,
@@ -303,14 +303,14 @@
       "id": 4,
       "name": "Tenants and tenancies",
       "outcome": "One-time tenant entry (contacts, members, vehicles, ID proof, agreement), move-in with one active tenant per flat, move-out with proration preview, tenancy history.",
-      "status": "In progress",
+      "status": "Done",
       "dependsOn": [
         1,
         3
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "Built and verified on the emulators. Remaining: Blaze/Storage on the live project, deploy rules + CORS, then the owner enters 2 TEST tenants.",
+      "comment": "Done and live; ID proof / agreement files wait for Blaze (task 4.8, B3).",
       "tasks": [
         {
           "id": "4.1",
@@ -334,7 +334,7 @@
           "id": "4.4",
           "title": "Move-out with proration preview (leaving day included)",
           "status": "Verified",
-          "comment": "Move-out preview (e.g. 15 of 30 days of Rs 12,000 = Rs 6,000), leaving day included; future leaving dates show \"Leaving on\". Charge adjustments come with Phase 5."
+          "comment": "Move-out preview and explicit charge adjustment (completed in Phase 5)."
         },
         {
           "id": "4.5",
@@ -358,13 +358,13 @@
           "id": "4.8",
           "title": "Private document storage (Firebase Storage rules + tests)",
           "status": "Done",
-          "comment": "storage.rules + 12 new rules tests (39 total). Live use needs Blaze + Storage (B3), rules deploy and bucket CORS (cors.json) for opening files."
+          "comment": "Replaced by Google Drive storage (Phase 8). Firebase Storage no longer used."
         },
         {
           "id": "4.9",
           "title": "Two TEST tenants entered by the owner through the form",
-          "status": "Not started",
-          "comment": "Owner request; fake data clearly marked TEST."
+          "status": "Verified",
+          "comment": "Added in the live app through the real form (2026-11-21): TEST Tenant One on B04-G-1 (Rs 8,000, shared meter) and TEST Tenant Two on B05-G-F (Rs 12,000, own meter). No files yet (Blaze)."
         }
       ]
     },
@@ -372,76 +372,82 @@
       "id": 5,
       "name": "Collections",
       "outcome": "Fast monthly rent collection with transparent allocation and credit.",
-      "status": "Not started",
+      "status": "Done",
       "dependsOn": [
         1,
         4
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "",
+      "comment": "Built, verified on the emulators and live: Firestore rules deployed 2026-11-20. ID/agreement files still wait for Blaze (B3).",
       "tasks": [
         {
           "id": "5.1",
-          "title": "Charge generation with deterministic IDs (no duplicates)",
-          "status": "Not started",
-          "comment": ""
+          "title": "Rent charges generated per anniversary period, deterministic IDs (no duplicates)",
+          "status": "Verified",
+          "comment": "Charges created automatically when Collections opens (3 periods appeared for a tenancy tracked from Sep); fixed IDs + rules stop duplicates."
         },
         {
           "id": "5.2",
-          "title": "Collections list for the month",
-          "status": "Not started",
-          "comment": ""
+          "title": "Collections list: every active tenancy with current period, status, older dues, credit",
+          "status": "Verified",
+          "comment": "Collections: month due/received, outstanding, credit; filters To collect / Paid / All; search; overdue first."
         },
         {
           "id": "5.3",
-          "title": "Quick 'full rent received' action",
-          "status": "Not started",
-          "comment": ""
+          "title": "Quick \"Full rent received\" with confirmation preview",
+          "status": "Verified",
+          "comment": "Full rent received uses the displayed period remaining amount; confirmation shows where the money goes."
         },
         {
           "id": "5.4",
-          "title": "Partial payment entry",
-          "status": "Not started",
-          "comment": ""
+          "title": "Partial payment entry (method, reference, notes)",
+          "status": "Done",
+          "comment": "\"Other amount\" form with method, reference, notes. Partial payments covered by tests; not separately clicked through."
         },
         {
           "id": "5.5",
-          "title": "Allocation preview and manual reallocation",
-          "status": "Not started",
-          "comment": ""
+          "title": "Allocation preview (older debt first) and manual reallocation with reason",
+          "status": "Verified",
+          "comment": "Preview warns when older debt is paid first; \"Change split\" with reason or back to automatic."
         },
         {
           "id": "5.6",
-          "title": "Safe retries (no duplicate payment)",
-          "status": "Not started",
-          "comment": "Handoff concern #5."
+          "title": "Safe retries: payment ID fixed when the form opens; a lost response never creates a duplicate",
+          "status": "Done",
+          "comment": "Payment ID fixed when the form opens; a retry finds the saved payment instead of creating another (rules test + code path)."
         },
         {
           "id": "5.7",
-          "title": "Stale-edit protection with versions",
-          "status": "Not started",
-          "comment": ""
+          "title": "Payments are append-only; admins void/restore with reason (no silent edits)",
+          "status": "Verified",
+          "comment": "Payments never edited; admin Void/Restore with reason checked on the emulators."
         },
         {
           "id": "5.8",
-          "title": "Tenancy ledger view",
-          "status": "Not started",
-          "comment": ""
+          "title": "Tenancy ledger: charges, payments, allocations, balance and credit",
+          "status": "Verified",
+          "comment": "Ledger: periods, adjustments, payments with splits, totals."
         },
         {
           "id": "5.9",
           "title": "Opening balances for existing tenants (with note)",
-          "status": "Not started",
-          "comment": "Moved from Phase 4 (needs the ledger)."
+          "status": "Verified",
+          "comment": "Opening balance added; payments re-allocated oldest first; not counted as rent due."
+        },
+        {
+          "id": "5.10",
+          "title": "Move-out creates explicit proration adjustment and reverses later periods",
+          "status": "Verified",
+          "comment": "Move-out on 24 Nov added -Rs 6,000 to the November period only; older unpaid periods untouched."
         }
       ]
     },
     {
       "id": 6,
       "name": "Electricity",
-      "outcome": "Own-meter bills and shared-meter submeter charges, kept separate from rent.",
-      "status": "Not started",
+      "outcome": "Tata Power bills for every connection; shared meters charged to tenants by sub-meter units x one family-wide rate; electricity collected separately from rent.",
+      "status": "Done",
       "dependsOn": [
         1,
         3,
@@ -449,117 +455,171 @@
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "Manual entry only in version 1.",
+      "comment": "Built, verified on the emulators and live: Firestore rules deployed 2026-11-20.",
       "tasks": [
         {
           "id": "6.1",
-          "title": "Connections: own meter (CA) and shared main + submeters",
-          "status": "Not started",
-          "comment": ""
+          "title": "Connections grouped: shared (sub-meter, family pays), own meter (tenant pays), own use (family pays)",
+          "status": "Verified",
+          "comment": "Electricity page groups connections: shared, own meter (tenant pays), family-paid; search; masked holder phone."
         },
         {
           "id": "6.2",
-          "title": "Own-meter bills with distinct statuses",
-          "status": "Not started",
-          "comment": ""
+          "title": "Record each Tata Power bill: dates, period, amount, due date, paid/unpaid",
+          "status": "Verified",
+          "comment": "Bill form (dates, period, amount, due date, payer, paid/unpaid); bill history; Mark paid checked."
         },
         {
           "id": "6.3",
-          "title": "Submeter readings, reset and override with reason",
-          "status": "Not started",
-          "comment": ""
+          "title": "Sub-meter readings with each bill; starting reading first time; reset with reason",
+          "status": "Verified",
+          "comment": "Starting reading first time; previous reading auto-filled next time; lower reading blocked unless reset with reason."
         },
         {
           "id": "6.4",
-          "title": "Electricity account separate from rent",
-          "status": "Not started",
-          "comment": ""
+          "title": "Tenant electricity charge = units x family-wide rate, due on the bill due date",
+          "status": "Verified",
+          "comment": "60 units x Rs 4 = Rs 240 charged to the tenant, due on the bill due date; vacant flat read but not charged."
+        },
+        {
+          "id": "6.5",
+          "title": "Electricity line in Collections and ledger, never mixed with rent",
+          "status": "Verified",
+          "comment": "Separate Electricity line + \"Electricity received\" in Collections; Rent/Electricity switch on the ledger."
+        },
+        {
+          "id": "6.6",
+          "title": "Own-meter bills paid by tenants tracked (not owner income)",
+          "status": "Done",
+          "comment": "Own-meter bills default to \"Tenant (directly)\" and are excluded from family income; covered by tests."
+        },
+        {
+          "id": "6.7",
+          "title": "Rules + tests for bills, readings, settings and electricity charges",
+          "status": "Done",
+          "comment": "6 new rules tests (54 total); 9 new unit tests (112 total)."
+        },
+        {
+          "id": "6.8",
+          "title": "Bill payer follows \"Tenant applicable\": own meter yes → tenant pays Tata (even vacant); no → own use, family pays; shared → family pays, tenants pay sub-meter share",
+          "status": "Done",
+          "comment": "Owner rule 2026-11-20. Unit tests updated (124 passing). Electricity page groups: Shared / Tenant pays directly / Own use."
         }
       ]
     },
     {
       "id": 7,
       "name": "Expenses",
-      "outcome": "Expenses by building or flat, payer type, stored building split.",
-      "status": "Not started",
+      "outcome": "Expenses by building or flat with payer type and payment mode, stored building split; editable categories; plus the owner-requested Monthly sheet and agreement renewal history.",
+      "status": "Done",
       "dependsOn": [
         1,
         3
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "",
+      "comment": "Built, verified on the emulators and live: Firestore rules deployed 2026-11-20.",
       "tasks": [
         {
           "id": "7.1",
-          "title": "Editable categories (add, rename, archive)",
-          "status": "Not started",
-          "comment": ""
+          "title": "Editable categories (add, rename, archive) in Settings",
+          "status": "Verified",
+          "comment": "Settings: standard categories added in one click; rename/archive/unarchive (admins)."
         },
         {
           "id": "7.2",
-          "title": "Expense entry with payer type and evidence",
-          "status": "Not started",
-          "comment": ""
+          "title": "Expense entry: date, amount, category, building/flat, payer type, payment mode, description",
+          "status": "Verified",
+          "comment": "Expense form with payment mode; category must be chosen (no silent default)."
         },
         {
           "id": "7.3",
-          "title": "Store building split snapshot at posting",
-          "status": "Not started",
-          "comment": ""
+          "title": "Building expense split across all flats incl. vacant, stored at posting",
+          "status": "Verified",
+          "comment": "Rs 1,000.01 split across all 3 flats incl. vacant: 333.34 + 333.34 + 333.33; stored with the expense."
         },
         {
           "id": "7.4",
-          "title": "Expense list and filters",
-          "status": "Not started",
-          "comment": ""
+          "title": "Expense list, filters and month/year totals by payer type",
+          "status": "Verified",
+          "comment": "Month / building / category filters, show voided, month and year totals by payer; Split, Edit, admin Void."
+        },
+        {
+          "id": "7.5",
+          "title": "Monthly sheet: rent and electricity paid / amount / date / mode per tenant per month",
+          "status": "Verified",
+          "comment": "Collections → Monthly sheet: rent paid/part/no, amount, date, mode; electricity paid, amount, date; own meters show Tata bill status."
+        },
+        {
+          "id": "7.6",
+          "title": "Renew agreement yearly, keeping previous agreement dates as history",
+          "status": "Verified",
+          "comment": "Renew agreement pre-fills next year; old dates kept as \"Earlier agreements\"."
+        },
+        {
+          "id": "7.7",
+          "title": "Rules + tests for categories, expenses and agreement history",
+          "status": "Done",
+          "comment": "5 new rules tests (59 total); 12 new unit tests (124 total)."
         }
       ]
     },
     {
       "id": 8,
       "name": "Documents",
-      "outcome": "Private agreements, IDs, bills and receipts attached to their records.",
-      "status": "Not started",
+      "outcome": "ID proofs and agreements stored in Google Drive (uploader's Drive, one folder per tenant), shared view-only with all active family members; the app keeps only a link. No Blaze needed.",
+      "status": "Verified",
       "dependsOn": [
         2,
         4
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "Firebase Storage needs the Blaze plan (blocker B3).",
+      "comment": "Verified live: Drive API on, rules deployed, test upload, sharing and Open checked in the app.",
       "tasks": [
         {
           "id": "8.1",
-          "title": "Storage security rules",
-          "status": "Not started",
-          "comment": ""
+          "title": "Connect Google Drive (limited \"files this app created\" permission) when uploading",
+          "status": "Done",
+          "comment": "Google pop-up asks for the limited \"files this app uses\" Drive permission, opened straight from the click; token kept ~50 minutes."
         },
         {
           "id": "8.2",
-          "title": "Upload: camera, PDF, JPEG, PNG up to 15 MB",
-          "status": "Not started",
-          "comment": ""
+          "title": "Upload photo / PDF to Drive: Property Manager / <tenant> folder; any family member can upload",
+          "status": "Done",
+          "comment": "Upload to Property Manager / <tenant> in the uploader's Drive from the tenant page and Add tenant form."
         },
         {
           "id": "8.3",
-          "title": "Attach documents to their original record",
-          "status": "Not started",
-          "comment": ""
+          "title": "Share each file view-only with all active family members; \"Update sharing\" when members change",
+          "status": "Done",
+          "comment": "Shared view-only with all active members (no email notifications); Documents page \"Update sharing\" when members change. 5 unit tests."
         },
         {
           "id": "8.4",
-          "title": "Authenticated preview and download",
-          "status": "Not started",
-          "comment": ""
+          "title": "Documents page and tenant page list files with Open (Drive viewer)",
+          "status": "Done",
+          "comment": "Documents page (grouped by tenant, search, Open) and tenant page list; Open uses the Google Drive viewer."
+        },
+        {
+          "id": "8.5",
+          "title": "Remove Firebase Storage code and rules; documents rules for Drive links + tests",
+          "status": "Done",
+          "comment": "Firebase Storage code, storage.rules and cors.json removed; documents rules accept only Drive links; only the uploader updates sharing. 63 rules tests pass."
+        },
+        {
+          "id": "8.6",
+          "title": "Owner enables the Google Drive API for the project (one-time)",
+          "status": "Done",
+          "comment": "Live test 2026-11-23: TEST sample uploaded to Property Manager / TEST Tenant One in the uploader's Drive, shared view-only with the other active member (no public link), listed on the tenant and Documents pages, Open shows it in Drive."
         }
       ]
     },
     {
       "id": 9,
       "name": "Dashboard and reminders",
-      "outcome": "Home screen with overdue rent, bills due, expiring agreements and tasks.",
-      "status": "Not started",
+      "outcome": "Dashboard with rent, outstanding, occupancy and expense figures; in-app reminders for everyone; daily 9 AM phone push (after Blaze).",
+      "status": "In progress",
       "dependsOn": [
         5,
         6,
@@ -567,39 +627,39 @@
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "",
+      "comment": "Dashboard and reminders done. Fixed: Dashboard no longer hangs if own reminders cannot load. Own reminders need the rules deploy (B12); phone push waits for Blaze + web-push key.",
       "tasks": [
         {
           "id": "9.1",
-          "title": "Computed reminders: rent, agreement 30/7 days, electricity",
-          "status": "Not started",
-          "comment": ""
+          "title": "Dashboard figures: rent this month, outstanding, occupancy, expenses this month",
+          "status": "Verified",
+          "comment": "Dashboard shows rent this month, outstanding, occupancy, expenses this month (checked on the emulators)."
         },
         {
           "id": "9.2",
-          "title": "Custom reminders",
-          "status": "Not started",
-          "comment": ""
+          "title": "Computed reminders: rent overdue / due in 3 days, agreements ending (30/7 days, expired), electricity due and unpaid Tata bills",
+          "status": "Verified",
+          "comment": "Rent overdue / due soon, agreements ending, electricity and unpaid Tata bills (5 unit tests; checked on the emulators)."
         },
         {
           "id": "9.3",
-          "title": "Dashboard summary",
-          "status": "Not started",
-          "comment": ""
+          "title": "Own reminders: title + date only; any member can mark done",
+          "status": "Verified",
+          "comment": "Own reminder added (title + date) and marked done on the emulators."
         },
         {
           "id": "9.4",
-          "title": "Decide push notifications vs in-app only",
-          "status": "Not started",
-          "comment": "Blocker B4."
+          "title": "Phone push: daily 9:00 AM summary (FCM + scheduled function)",
+          "status": "Blocked",
+          "comment": "Built: device registration (Settings), service worker, scheduled 9 AM function (functions/). Needs Blaze (B3) and a web-push key (B11) to switch on."
         }
       ]
     },
     {
       "id": 10,
       "name": "Reports and exports",
-      "outcome": "Rent, electricity, expense, profit and occupancy reports with Excel/PDF export.",
-      "status": "Not started",
+      "outcome": "Calendar-year reports with building / flat / tenant filters, exported to Excel and PDF.",
+      "status": "Done",
       "dependsOn": [
         5,
         6,
@@ -607,45 +667,51 @@
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "",
+      "comment": "Six reports with year and building/flat/tenant filters, Excel and PDF. Verified on the emulators.",
       "tasks": [
         {
           "id": "10.1",
-          "title": "Report calculations on agreed bases",
-          "status": "Not started",
+          "title": "Rent collection report (due, received, outstanding per tenant)",
+          "status": "Verified",
           "comment": ""
         },
         {
           "id": "10.2",
-          "title": "Filters: building, flat, tenant, dates",
-          "status": "Not started",
+          "title": "Outstanding dues report (rent and electricity, oldest first)",
+          "status": "Verified",
           "comment": ""
         },
         {
           "id": "10.3",
-          "title": "Gross debt and credit shown separately from net",
-          "status": "Not started",
-          "comment": "Handoff concern #3."
+          "title": "Expenses report (by building and category, family vs tenant-paid)",
+          "status": "Done",
+          "comment": "Covered by unit tests; no expenses in the browser test data."
         },
         {
           "id": "10.4",
-          "title": "Excel export",
-          "status": "Not started",
-          "comment": ""
+          "title": "Electricity report (tenant charges/received, Tata bills by connection)",
+          "status": "Done",
+          "comment": "Covered by unit tests; no bills in the browser test data."
         },
         {
           "id": "10.5",
-          "title": "PDF export with full Unicode names",
-          "status": "Not started",
+          "title": "Occupancy and tenant list reports (ID numbers masked)",
+          "status": "Verified",
           "comment": ""
+        },
+        {
+          "id": "10.6",
+          "title": "Export every report to Excel and PDF",
+          "status": "Done",
+          "comment": "Excel download triggered without errors and a sample file was confirmed as a valid workbook; PDF uses the print page (not visually checked in the test browser)."
         }
       ]
     },
     {
       "id": 11,
       "name": "Deploy and pilot",
-      "outcome": "Live on Firebase Hosting, installed on family phones, backups proven, pilot accepted.",
-      "status": "Not started",
+      "outcome": "Installable \"Property Manager\" app on Firebase Hosting, admin backup download, change history screen, family pilot.",
+      "status": "In progress",
       "dependsOn": [
         0,
         1,
@@ -661,43 +727,43 @@
       ],
       "needsRecheck": false,
       "recheckReason": "",
-      "comment": "",
+      "comment": "Installable app, backup, change history and faster loading done. Fixed: offline cache could show the owner set-up screen. Waiting: publish OK, live rules deploy, family pilot.",
       "tasks": [
         {
           "id": "11.1",
-          "title": "Firebase Hosting deploy",
-          "status": "Not started",
-          "comment": ""
+          "title": "Hosting config and publish to property-management-a5e84.web.app",
+          "status": "Blocked",
+          "comment": "Hosting config ready (npm run deploy:hosting). Waiting for the owner OK to publish (B12)."
         },
         {
           "id": "11.2",
-          "title": "PNG app icons and offline service worker",
-          "status": "Not started",
-          "comment": ""
+          "title": "Installable app: name \"Property Manager\", PNG icons, manifest",
+          "status": "Verified",
+          "comment": "Manifest \"Property Manager\", PNG icons 192/512/maskable and iPhone icon all load."
         },
         {
           "id": "11.3",
-          "title": "Backup export and restore drill",
-          "status": "Not started",
-          "comment": ""
+          "title": "Admin \"Download backup\" (Excel of all records)",
+          "status": "Verified",
+          "comment": "Backup downloaded (18 records) — fixed a permission problem with the settings record first."
         },
         {
           "id": "11.4",
-          "title": "Enter real setup data through the app",
-          "status": "Not started",
-          "comment": "Blocker B5."
+          "title": "Change history screen (admins only)",
+          "status": "Verified",
+          "comment": "Change history screen with date and record-type filters; rules make it admins-only (tested)."
         },
         {
           "id": "11.5",
-          "title": "Family pilot on two or more devices",
-          "status": "Not started",
-          "comment": ""
+          "title": "Faster loading (split the app into smaller parts)",
+          "status": "Done",
+          "comment": "Screens load on demand; main file 1.1 MB → 865 KB (266 KB compressed)."
         },
         {
           "id": "11.6",
-          "title": "Run all 12 acceptance scenarios in the app",
+          "title": "Family pilot: real data entered and checked by the family",
           "status": "Not started",
-          "comment": ""
+          "comment": "Owner activity (B5)."
         }
       ]
     }
@@ -709,7 +775,7 @@
       "logicPhase": 1,
       "logicStatus": "Done",
       "appPhase": 5,
-      "appStatus": "Not started"
+      "appStatus": "Verified"
     },
     {
       "id": 2,
@@ -717,7 +783,7 @@
       "logicPhase": 1,
       "logicStatus": "Done",
       "appPhase": 5,
-      "appStatus": "Not started"
+      "appStatus": "Done"
     },
     {
       "id": 3,
@@ -725,7 +791,7 @@
       "logicPhase": 1,
       "logicStatus": "Done",
       "appPhase": 5,
-      "appStatus": "Not started"
+      "appStatus": "Verified"
     },
     {
       "id": 4,
@@ -741,7 +807,7 @@
       "logicPhase": 1,
       "logicStatus": "Done",
       "appPhase": 4,
-      "appStatus": "Not started"
+      "appStatus": "Verified"
     },
     {
       "id": 6,
@@ -757,7 +823,7 @@
       "logicPhase": 1,
       "logicStatus": "Done",
       "appPhase": 6,
-      "appStatus": "Not started"
+      "appStatus": "Verified"
     },
     {
       "id": 8,
@@ -765,7 +831,7 @@
       "logicPhase": 1,
       "logicStatus": "Done",
       "appPhase": 7,
-      "appStatus": "Not started"
+      "appStatus": "Verified"
     },
     {
       "id": 9,
@@ -779,9 +845,9 @@
       "id": 10,
       "title": "Electricity states (unpaid, no bill, unknown, failed) distinct",
       "logicPhase": 6,
-      "logicStatus": "Not started",
+      "logicStatus": "Done",
       "appPhase": 6,
-      "appStatus": "Not started"
+      "appStatus": "Done"
     },
     {
       "id": 11,
@@ -789,7 +855,7 @@
       "logicPhase": 1,
       "logicStatus": "Done",
       "appPhase": 4,
-      "appStatus": "Not started"
+      "appStatus": "Verified"
     },
     {
       "id": 12,
@@ -825,26 +891,21 @@
     },
     {
       "id": "B3",
-      "title": "Firebase Blaze plan with budget alert",
-      "blocksPhases": [
-        4,
-        8
-      ],
-      "blocksTasks": [
-        "4.8"
-      ],
-      "status": "Open",
-      "comment": "Owner is upgrading to Blaze and turning on Storage (2026-11-20). Needed for ID proof / agreement uploads."
-    },
-    {
-      "id": "B4",
-      "title": "Reminders: push notifications or in-app only",
+      "title": "Firebase Blaze plan (only for the daily phone push now)",
       "blocksPhases": [],
       "blocksTasks": [
         "9.4"
       ],
       "status": "Open",
-      "comment": "In-app reminders work either way."
+      "comment": "Files moved to Google Drive (2026-11-23), so Blaze is needed only for the 9 AM push."
+    },
+    {
+      "id": "B4",
+      "title": "Reminders: push notifications or in-app only",
+      "blocksPhases": [],
+      "blocksTasks": [],
+      "status": "Resolved",
+      "comment": "Owner chose in-app reminders plus daily 9 AM phone push (push needs Blaze)."
     },
     {
       "id": "B5",
@@ -875,6 +936,62 @@
       ],
       "status": "Resolved",
       "comment": "Rules deployed 2026-11-20 (Deploy complete)."
+    },
+    {
+      "id": "B8",
+      "title": "Deploy Firestore rules for tenants, rent charges and payments (no Blaze needed)",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "4.9"
+      ],
+      "status": "Resolved",
+      "comment": "Deployed 2026-11-20 (Deploy complete). Tenants, charges and payments work live; files wait for Blaze (B3)."
+    },
+    {
+      "id": "B9",
+      "title": "Deploy Firestore rules for electricity (rate, bills, readings)",
+      "blocksPhases": [],
+      "blocksTasks": [],
+      "status": "Resolved",
+      "comment": "Deployed 2026-11-20 (Deploy complete)."
+    },
+    {
+      "id": "B10",
+      "title": "Deploy Firestore rules for categories, expenses and agreement history",
+      "blocksPhases": [],
+      "blocksTasks": [],
+      "status": "Resolved",
+      "comment": "Deployed 2026-11-20 (Deploy complete)."
+    },
+    {
+      "id": "B11",
+      "title": "Web-push key for phone notifications",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "9.4"
+      ],
+      "status": "Open",
+      "comment": "After Blaze: Firebase console → Project settings → Cloud Messaging → Web Push certificates → Generate; put it in .env.local as VITE_FIREBASE_VAPID_KEY."
+    },
+    {
+      "id": "B12",
+      "title": "Owner OK to publish the app to property-management-a5e84.web.app",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "11.1"
+      ],
+      "status": "Open",
+      "comment": "Firestore rules deployed 2026-11-23. Owner will review the app and request changes before publishing. Do not publish until asked."
+    },
+    {
+      "id": "B13",
+      "title": "Enable the Google Drive API for property-management-a5e84",
+      "blocksPhases": [],
+      "blocksTasks": [
+        "8.6"
+      ],
+      "status": "Resolved",
+      "comment": "Drive API enabled in property-management-a5e84 on 2026-11-23."
     }
   ]
 }

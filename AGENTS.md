@@ -12,9 +12,10 @@ The requirements were carried over from an earlier Flutter + Python prototype ("
 
 ## Architecture
 - React + Vite (JavaScript) for the UI, React Router for navigation.
-- Firebase Authentication for family sign-in; Firestore for data; Firebase Storage for private documents; Firebase Hosting for deployment.
+- Firebase Authentication for family sign-in; Firestore for data; **Google Drive** for ID proofs and agreements (uploader's Drive, shared view-only with the family; the app stores only the link; Drive permission limited to files the app created); Firebase Hosting for deployment. Firebase Storage is not used.
 - PWA for install on Android and desktop; iPhone via the browser.
-- No custom backend or Cloud Functions in version 1. Money logic lives in pure, unit-tested functions under `src/lib/`.
+- No custom backend. The only server code is one scheduled Cloud Function (`functions/`) that sends the daily 9 AM reminder push; it reuses `src/lib` (copied to `functions/shared` on deploy) and needs the Blaze plan. Money logic lives in pure, unit-tested functions under `src/lib/`.
+- App name on phones: **Property Manager**. Published at https://property-management-a5e84.web.app (Firebase Hosting) — only after the owner's OK.
 
 ### Layout
 ```
@@ -42,7 +43,7 @@ docs/           requirements and roadmap
 - Never commit secrets, credentials, service account keys, `.env*` files or tokens. Firebase web config lives in `.env.local` (ignored by Git).
 - The Firebase web API key is not a secret by itself; protection comes from **Firestore and Storage security rules** plus the family allowlist. Rules are committed and tested in the emulator.
 - Admin/family roles enforced by rules: only admins delete/restore or manage buildings, flats, users and settings.
-- Treat rental agreements and ID proofs as sensitive: private storage, authenticated access only, no public URLs.
+- Treat rental agreements and ID proofs as sensitive: Drive files are shared only with active family members (never "anyone with the link"); "Update sharing" removes members whose access was turned off.
 - Minimise personal data in logs, screenshots and code comments. Mask phone/ID numbers in lists.
 - Every data change writes an audit entry; audit entries cannot be edited or deleted.
 

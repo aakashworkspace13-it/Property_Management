@@ -178,6 +178,12 @@ describe('audit log', () => {
     await assertFails(setDoc(doc(db, 'auditLogs', 'a1'), auditData(STRANGER)))
     await assertFails(getDocs(collection(db, 'auditLogs')))
   })
+
+  it('only admins can read the change history', async () => {
+    await seed([[FAMILY, 'family']])
+    await assertSucceeds(getDocs(collection(dbFor(OWNER), 'auditLogs')))
+    await assertFails(getDocs(collection(dbFor(FAMILY), 'auditLogs')))
+  })
 })
 
 describe('everything else', () => {

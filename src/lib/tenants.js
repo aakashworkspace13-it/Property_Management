@@ -172,3 +172,23 @@ export function checkUpload(file) {
   if (file.size === 0) return 'The file is empty.'
   return null
 }
+
+/**
+ * Renewing an agreement (yearly): the current dates move into history and the new dates become
+ * current. Returns { value: { agreementStart, agreementEnd, agreementHistory }, errors }.
+ */
+export function validateRenewal(tenancy, { start, end }) {
+  const errors = {}
+  if (!ISO.test(start ?? '')) errors.start = 'Enter the new start date.'
+  if (!ISO.test(end ?? '')) errors.end = 'Enter the new end date.'
+  if (!errors.start && !errors.end && compareDates(end, start) < 0) errors.end = 'The new agreement ends before it starts.'
+  if (!errors.start && tenancy.agreementStart && compareDates(start, tenancy.agreementStart) <= 0) {
+    errors.start = 'The new agreement must start after the current one started.'
+  }
+  const history = [...(tenancy.agreementHistory ?? [])]
+  if (tenancy.agreementStart || tenancy.agreementEnd) {
+    history.push({ start: tenancy.agreementStart ?? '', end: tenancy.agreementEnd ?? '' })
+  }
+  if (history.length > 50) errors.start = 'Too many earlier agreements recorded.'
+  return { value: { agreementStart: start, agreementEnd: end, agreementHistory: history }, errors }
+}

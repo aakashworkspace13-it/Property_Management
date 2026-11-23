@@ -72,6 +72,12 @@ npm run deploy:rules
 
 This deploys to the real project (`prod` alias in `.firebaserc`). If it fails with HTTP 401, the Firebase CLI login has expired: run `firebase logout`, then `firebase login`.
 
+## Publish and phone notifications
+
+- `npm run deploy:hosting` — build and publish the app to https://property-management-a5e84.web.app (owner OK first).
+- `npm run deploy:functions` — the daily 9 AM reminder push (needs Blaze and `VITE_FIREBASE_VAPID_KEY` in `.env.local`).
+- `npm run icons` — regenerate the phone icons in `public/icons/`.
+
 ## Build tracker
 
 After changing `docs/tracker/tracker.json`:

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { claimOwnership } from '../../services/members.js'
 import { usingEmulators } from '../../services/firebase.js'
 import { useAuth } from './auth-context.js'
@@ -9,7 +9,7 @@ function Screen({ title, children }) {
       <div className="card auth-card">
         <div className="brand">
           <img src="/favicon.svg" alt="" width="36" height="36" />
-          <span>Family Property</span>
+          <span>Property Manager</span>
         </div>
         <h1>{title}</h1>
         {children}
@@ -20,9 +20,25 @@ function Screen({ title, children }) {
 }
 
 export function LoadingScreen() {
+  const { user, signOut } = useAuth()
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 8000)
+    return () => clearTimeout(timer)
+  }, [])
   return (
     <Screen title="Loading…">
       <p className="muted">Checking your sign-in.</p>
+      {slow && (
+        <>
+          <p className="muted small">This is taking long. Check the internet connection, or sign in again.</p>
+          {user && (
+            <button type="button" className="button wide" onClick={signOut}>
+              Sign out
+            </button>
+          )}
+        </>
+      )}
     </Screen>
   )
 }

@@ -1,11 +1,10 @@
-// Security rules for tenants, tenancies, the one-tenant-per-flat lock, documents and Storage files.
+// Security rules for tenants, tenancies, the one-tenant-per-flat lock and Drive document links.
 // Run with: npm run test:rules. Synthetic data only.
 
 import { readFileSync } from 'node:fs'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing'
 import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc, writeBatch } from 'firebase/firestore'
-import { getBytes, ref, uploadBytes } from 'firebase/storage'
 
 const ADMIN = { uid: 'admin-uid', email: 'admin@example.invalid' }
 const FAMILY = { uid: 'family-uid', email: 'family@example.invalid' }
@@ -17,7 +16,6 @@ beforeAll(async () => {
   env = await initializeTestEnvironment({
     projectId: 'demo-family-property',
     firestore: { rules: readFileSync('firestore.rules', 'utf8') },
-    storage: { rules: readFileSync('storage.rules', 'utf8') },
   })
 })
 
@@ -27,7 +25,6 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await env.clearFirestore()
-  await env.clearStorage()
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore()
     for (const [user, role] of [[ADMIN, 'admin'], [FAMILY, 'family']]) {
@@ -145,9 +142,7 @@ describe('tenancies: one active tenant per flat', () => {
   })
 })
 
-describe('documents and files', () => {
-  const pdf = new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52]) // "%PDF-1.4"
-
+describe('documents (Google Drive links)', () => {
   async function seedTenant() {
     await env.withSecurityRulesDisabled(async (ctx) => {
       await setDoc(doc(ctx.firestore(), 'tenants/t1'), { ...tenant(), createdAt: new Date() })
@@ -155,36 +150,34 @@ describe('documents and files', () => {
   }
 
   const record = (extra = {}) => ({
-    tenantId: 't1', kind: 'id-proof', label: 'Front', fileName: 'id.pdf', contentType: 'application/pdf', size: 8,
-    storagePath: 'tenants/t1/d1', uploadedBy: FAMILY.email, uploadedAt: serverTimestamp(), ...extra,
+    tenantId: 't1', kind: 'id-proof', label: 'ID proof', fileName: 'id.pdf', contentType: 'application/pdf', size: 8,
+    driveFileId: 'drive-file-1', driveLink: 'https://drive.google.com/file/d/drive-file-1/view', sharedWith: ['admin@example.invalid'],
+    uploadedBy: FAMILY.email, uploadedAt: serverTimestamp(), ...extra,
   })
 
-  it('members can upload JPG/PNG/PDF files to an existing tenant and read them back', async () => {
+  it('members record Drive links for an existing tenant', async () => {
     await seedTenant()
-    const storage = ctxFor(FAMILY).storage()
-    await assertSucceeds(uploadBytes(ref(storage, 'tenants/t1/d1'), pdf, { contentType: 'application/pdf' }))
-    await assertSucceeds(getBytes(ref(storage, 'tenants/t1/d1')))
+    await assertSucceeds(setDoc(doc(ctxFor(FAMILY).firestore(), 'documents/d1'), record()))
   })
 
-  it('rejects other file types, unknown tenants, overwrites and outsiders', async () => {
+  it('rejects non-Drive links, other file types, unknown tenants and outsiders', async () => {
     await seedTenant()
-    const storage = ctxFor(FAMILY).storage()
-    await assertFails(uploadBytes(ref(storage, 'tenants/t1/d2'), pdf, { contentType: 'text/html' }))
-    await assertFails(uploadBytes(ref(storage, 'tenants/nobody/d3'), pdf, { contentType: 'application/pdf' }))
-    await assertSucceeds(uploadBytes(ref(storage, 'tenants/t1/d4'), pdf, { contentType: 'application/pdf' }))
-    await assertFails(uploadBytes(ref(storage, 'tenants/t1/d4'), pdf, { contentType: 'application/pdf' }))
-    const outsider = ctxFor(STRANGER).storage()
-    await assertFails(getBytes(ref(outsider, 'tenants/t1/d4')))
-    await assertFails(uploadBytes(ref(outsider, 'tenants/t1/d5'), pdf, { contentType: 'application/pdf' }))
+    const db = ctxFor(FAMILY).firestore()
+    await assertFails(setDoc(doc(db, 'documents/d2'), record({ driveLink: 'https://example.com/x' })))
+    await assertFails(setDoc(doc(db, 'documents/d3'), record({ contentType: 'image/gif' })))
+    await assertFails(setDoc(doc(db, 'documents/d4'), record({ tenantId: 'nobody' })))
+    await assertFails(setDoc(doc(db, 'documents/d5'), record({ uploadedBy: ADMIN.email })))
+    await assertFails(setDoc(doc(ctxFor(STRANGER).firestore(), 'documents/d6'), record({ uploadedBy: STRANGER.email })))
   })
 
-  it('document records must point at their own file path and cannot be changed', async () => {
+  it('only the uploader updates sharing; nothing else changes; never deleted', async () => {
     await seedTenant()
     const db = ctxFor(FAMILY).firestore()
     await assertSucceeds(setDoc(doc(db, 'documents/d1'), record()))
-    await assertFails(setDoc(doc(db, 'documents/d2'), record({ storagePath: 'tenants/t1/other' })))
-    await assertFails(setDoc(doc(db, 'documents/d3'), record({ storagePath: 'tenants/t1/d3', contentType: 'image/gif' })))
-    await assertFails(updateDoc(doc(db, 'documents/d1'), { label: 'Back' }))
+    const stamp = (user) => ({ updatedBy: user.email, updatedAt: serverTimestamp() })
+    await assertSucceeds(updateDoc(doc(db, 'documents/d1'), { sharedWith: [], ...stamp(FAMILY) }))
+    await assertFails(updateDoc(doc(ctxFor(ADMIN).firestore(), 'documents/d1'), { sharedWith: [], ...stamp(ADMIN) }))
+    await assertFails(updateDoc(doc(db, 'documents/d1'), { label: 'Back', ...stamp(FAMILY) }))
     await assertFails(deleteDoc(doc(db, 'documents/d1')))
   })
 })

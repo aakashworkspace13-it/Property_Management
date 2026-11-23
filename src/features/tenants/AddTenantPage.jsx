@@ -5,7 +5,9 @@ import { useAuth } from '../auth/auth-context.js'
 import { formatINR, rupeesToPaise, todayInKolkata } from '../../lib/money/index.js'
 import { flatReference } from '../../lib/property.js'
 import { checkUpload, defaultTrackFrom, trackingPreview, validateTenancy, validateTenant } from '../../lib/tenants.js'
-import { addTenantWithTenancy, uploadDocument } from '../../services/tenants.js'
+import { addTenantWithTenancy } from '../../services/tenants.js'
+import { getDriveToken, uploadToDrive } from '../../services/drive.js'
+import { useMembers } from '../settings/useMembers.js'
 import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from './useTenancyData.js'
 import FilePicker from './FilePicker.jsx'
@@ -19,6 +21,7 @@ export default function AddTenantPage() {
   const { user } = useAuth()
   const { buildings, flats, loading: propertyLoading } = usePropertyData()
   const { tenancies, loading: tenancyLoading } = useTenancyData()
+  const { members } = useMembers()
   const today = todayInKolkata()
 
   const [tenant, setTenant] = useState(EMPTY_TENANT)
@@ -66,6 +69,19 @@ export default function AddTenantPage() {
       return
     }
 
+    // Connect Google Drive first (the pop-up must open straight from the click).
+    let driveToken = null
+    if (idFiles.length + agreementFiles.length > 0) {
+      try {
+        setStatus('Connecting Google Drive…')
+        driveToken = await getDriveToken()
+      } catch (e) {
+        setStatus(null)
+        setSaveError(`${e.message} The tenant was not saved; try again, or remove the files and add them later.`)
+        return
+      }
+    }
+
     let ids
     try {
       setStatus('Saving tenant…')
@@ -85,7 +101,12 @@ export default function AddTenantPage() {
     for (const [i, u] of uploads.entries()) {
       setStatus(`Uploading file ${i + 1} of ${uploads.length}…`)
       try {
-        await uploadDocument(user, { tenantId: ids.tenantId, tenancyId: ids.tenancyId, ...u })
+        await uploadToDrive(user, driveToken, {
+          tenant: { id: ids.tenantId, name: t.value.name },
+          tenancyId: ids.tenancyId,
+          ...u,
+          members: members ?? [],
+        })
       } catch {
         failed.push(u.file.name)
       }

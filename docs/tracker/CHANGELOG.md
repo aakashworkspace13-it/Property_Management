@@ -5,6 +5,142 @@ Generated entries come from `node scripts/build-tracker.js --log ... --why ...`.
 
 <!-- new entries go below this line, newest first -->
 
+## 2026-11-23 12:34 IST — Phase 8 verified live: Drive API enabled (B13 resolved), rules deployed, test upload for TEST Tenant One shared view-only and opened in Drive
+
+- **Why:** Live check of Google Drive documents after the owner enabled the Drive API
+- **Phases changed:** 8 · Documents
+- **Impact (dependent phases):** 9 · Dashboard and reminders; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 97%
+
+## 2026-11-23 12:21 IST — Google Drive documents built; Storage removed; re-check of 5, 6, 10 cleared
+
+- **Why:** Owner chose Google Drive for files. Re-check flags came from Phase 4 task 4.8 (Storage) which does not affect Collections, Electricity or Reports; reviewed and cleared.
+- **Phases changed:** 8 · Documents
+- **Impact (dependent phases):** 9 · Dashboard and reminders; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 96%
+
+## 2026-11-23 12:17 IST — Documents move to Google Drive (Phase 8 re-planned)
+
+- **Why:** Owner chose Google Drive instead of Firebase Storage: any member uploads, all members view, one folder per tenant; Blaze now only needed for push.
+- **Phases changed:** 4 · Tenants and tenancies; 8 · Documents
+- **Impact (dependent phases):** 5 · Collections; 6 · Electricity; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** 5 · Collections; 6 · Electricity; 10 · Reports and exports
+- **Overall progress after change:** 90%
+
+## 2026-11-21 00:41 IST — 2 TEST tenants added to the live app
+
+- **Why:** Owner asked; added through the real Add tenant form in Chrome; Dashboard loading fix.
+- **Phases changed:** 4 · Tenants and tenancies; 9 · Dashboard and reminders
+- **Impact (dependent phases):** 5 · Collections; 6 · Electricity; 8 · Documents; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** 5 · Collections; 6 · Electricity; 10 · Reports and exports
+- **Overall progress after change:** 92%
+
+## 2026-11-21 00:31 IST — Publishing on hold for owner review
+
+- **Why:** Owner will review the app and request changes before publishing.
+- **Phases changed:** none
+- **Impact (dependent phases):** none
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 91%
+
+## 2026-11-21 00:25 IST — Phases 9-11 built and verified on emulators
+
+- **Why:** Dashboard, reminders, six reports with Excel/PDF, backup, change history, installable app and faster loading done; push and publishing wait for Blaze and owner OK.
+- **Phases changed:** 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Impact (dependent phases):** none
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 91%
+
+## 2026-11-21 00:09 IST — Phases 9-11 planned from owner answers
+
+- **Why:** Owner answered all questions: reminders + 9 AM push, six reports (no profit), calendar year, Excel+PDF, free Firebase address, backup download, admin change history, app name Property Manager, ask before publishing.
+- **Phases changed:** 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Impact (dependent phases):** none
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 77%
+
+## 2026-11-20 23:48 IST — Tracker brought up to date; Blaze not yet upgraded
+
+- **Why:** Owner confirmed Blaze is not upgraded; electricity payer rule changed to follow Tenant applicable; Phase 7 rules deployed.
+- **Phases changed:** 6 · Electricity
+- **Impact (dependent phases):** 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 78%
+
+## 2026-11-20 16:16 IST — Phase 6 re-check cleared after review
+
+- **Why:** Phase 7 changes to Collections (shared charge-generation hook) and tenancies (agreement history) do not affect electricity code; Monthly sheet electricity column verified on the emulators.
+- **Phases changed:** none
+- **Impact (dependent phases):** none
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 77%
+
+## 2026-11-20 16:15 IST — Phase 7 Expenses, Monthly sheet and agreement renewal built and verified
+
+- **Why:** Owner-requested monthly fields and yearly agreement renewal added with expenses; verified on emulators; requirements updated.
+- **Phases changed:** 4 · Tenants and tenancies; 5 · Collections; 7 · Expenses
+- **Impact (dependent phases):** 6 · Electricity; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** 6 · Electricity
+- **Overall progress after change:** 77%
+
+## 2026-11-20 16:06 IST — Phase 7 planned with Monthly sheet and agreement renewal
+
+- **Why:** Owner listed monthly fields and yearly agreement updates; chose Monthly sheet, Tata bill status for own meters, renewal history, payment mode on expenses.
+- **Phases changed:** 7 · Expenses
+- **Impact (dependent phases):** 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 69%
+
+## 2026-11-20 15:59 IST — Electricity rules deployed
+
+- **Why:** Owner approved; deploy complete. Live app can now store the rate, bills and readings.
+- **Phases changed:** 6 · Electricity
+- **Impact (dependent phases):** 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 72%
+
+## 2026-11-20 15:58 IST — Phase 6 Electricity built and verified on emulators
+
+- **Why:** Bills for all connections, sub-meter readings with one family-wide rate, tenant charges due on bill due date, separate electricity collection and ledger; requirements updated with owner decisions.
+- **Phases changed:** 6 · Electricity
+- **Impact (dependent phases):** 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 72%
+
+## 2026-11-20 15:48 IST — Phase 6 planned with owner choices
+
+- **Why:** Owner answered electricity questions: tenant pays own meters, shared meters units x one rate, readings with each bill, bills for all connections, separate collection line.
+- **Phases changed:** 6 · Electricity
+- **Impact (dependent phases):** 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 64%
+
+## 2026-11-20 15:41 IST — Firestore rules for tenants and collections deployed
+
+- **Why:** Owner approved; deploy complete. Live app can now store tenants, charges and payments.
+- **Phases changed:** 5 · Collections
+- **Impact (dependent phases):** 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 66%
+
+## 2026-11-20 15:39 IST — Phase 5 Collections built and verified on emulators
+
+- **Why:** Charges, quick and partial payments, allocation preview, manual split, void/restore, opening balances and move-out adjustments done; crash after saving fixed.
+- **Phases changed:** 4 · Tenants and tenancies; 5 · Collections
+- **Impact (dependent phases):** 6 · Electricity; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 66%
+
+## 2026-11-20 15:29 IST — Phase 4 go-live deferred; Phase 5 planned
+
+- **Why:** Owner will upgrade to Blaze later and asked to continue building.
+- **Phases changed:** 4 · Tenants and tenancies; 5 · Collections
+- **Impact (dependent phases):** 6 · Electricity; 8 · Documents; 9 · Dashboard and reminders; 10 · Reports and exports; 11 · Deploy and pilot
+- **Flagged "Needs re-check":** none
+- **Overall progress after change:** 54%
+
 ## 2026-11-20 15:08 IST — Phase 4 built and verified on emulators
 
 - **Why:** Tenant form, tenancies with one-tenant-per-flat lock, ID/agreement uploads, move-out preview, history; 39 rules tests and 91 unit tests pass.

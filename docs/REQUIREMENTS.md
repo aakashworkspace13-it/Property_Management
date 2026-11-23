@@ -24,6 +24,8 @@ Status markers: **[decided]** = agreed requirement, **[open]** = needs an owner 
 
 Dashboard · Buildings and flats · Collections · Expenses · Documents and reminders · Reports · Settings.
 
+**Monthly sheet** (owner request 2026-11-20): for a chosen month, one row per tenant with rent paid (yes / part / no), amount paid, paid date and payment mode, and electricity paid (yes / no), amount and paid date. For own-meter tenants, electricity shows whether that month's Tata Power bill is paid.
+
 Building → floor → flat hierarchy, search, readable text, large touch targets, plain language. The primary monthly workflow (Collections) must be fast: open Collections, review the tenant and rent period, mark full rent received or enter a partial amount, confirm the allocation, move to the next tenant. Optional fields (reference, method, notes, evidence) must not slow this down.
 
 ## 4. Buildings and flats
@@ -57,6 +59,7 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 - Old tenancies, documents, payments, expenses and debt are kept after departure.
 - **Never transfer an old tenancy's balance to a replacement tenant.**
 - **No security deposits and no scheduled rent increases in version 1.** [decided]
+- Agreements are renewed yearly: **Renew agreement** sets new start/end dates and keeps the previous dates as history (owner request 2026-11-20).
 
 ## 6. Financial rules (must survive every change)
 
@@ -84,7 +87,9 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 
 ### 6.4 Expenses and profit
 
-- Expenses are building-wide or flat-specific: date, amount, category, building, optional flat/tenancy, payer type (owner-paid / tenant-paid), description, evidence.
+- Expenses are building-wide or flat-specific: date, amount, category, building, optional flat/tenancy, payer type (owner-paid / tenant-paid), **payment mode** (cash, UPI, bank transfer, cheque, other — owner request 2026-11-20), description, notes, evidence (photo/PDF once Blaze is on).
+- Amount, date, building, flat, payer and the stored split never change after saving; description, category, payment mode and notes can. Wrong expenses are voided by an admin (with a reason) and entered again.
+- Family-paid Tata Power bills are **not** also entered as expenses; reports count paid family bills as owner electricity payments (no double counting).
 - Initial editable categories: repairs, paint, bathroom fittings, submersible/borewell, maintenance, tax, other. Categories can be added, renamed and archived.
 - A building expense is split **equally across all flats present at posting, including vacant flats**. The flat list and shares are stored at posting; leftover paise are distributed deterministically so shares sum exactly. Adding a flat later does not change old shares.
 - Flat reports include direct costs plus stored building shares; consolidated reports count each expense once.
@@ -102,11 +107,19 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 - Own-meter bills: provider, CA number, dates, amount, status, documents.
 - Submeter charges: previous/current readings and dates, manually entered rate, consumption, adjustments, override with reason. **Negative consumption is rejected** unless an explicit reset/correction is recorded.
 - Version 1 is manual entry. No provider API integration is claimed.
+- **Owner decisions (2026-11-20):**
+  - **Own meter** (one flat, no sub-meter): the **tenant pays Tata Power directly**. The app records each bill (dates, amount, due date, paid/unpaid) only to check it is paid; it is never family income.
+  - **Shared meter** (sub-meter = yes): the **family pays Tata Power**. Sub-meter readings are entered **with each Tata Power bill** (reading date = bill period end). Each tenant's charge = **units used × one family-wide rate per unit** (set by admins in Settings, e.g. ₹4), **due on the bill's due date**. Each charge keeps the rate it was made with.
+  - The first time a sub-meter is used, a **starting reading** is entered; afterwards the previous reading fills in automatically. Vacant and own-use flats are read but not charged.
+  - **Bills are recorded for all connections**, including Home and Office (family-paid).
+  - Electricity is collected in **Collections as a separate line** and has its own ledger; it is never mixed with rent.
 
 ## 8. Documents
 
-- Camera images and PDF/JPEG/PNG uploads (up to 15 MB) for IDs, agreements, payment evidence, bills, receipts, invoices.
-- Attached to the original record; preview, download, type, upload date and uploader shown. Storage is private and authenticated.
+- Camera photos and JPG/PNG/PDF files (up to 15 MB) for ID proofs and agreements, attached to the tenant (and tenancy).
+- **Stored in Google Drive (owner choice 2026-11-23):** any family member can upload; each file goes to the uploader's own Drive under *Property Manager / <tenant>* and is shared **view-only with every active family member**. The app keeps only the link (documents/{id}) and uses Google's narrowest Drive permission (only files the app created).
+- When family members are added or turned off, the uploader presses **Update sharing** (Documents page) to add or remove their access.
+- Shown on the tenant page and the Documents page with type, file name and whose Drive it is in; **Open** shows it in the Google Drive viewer.
 
 ## 9. Reminders
 
@@ -114,12 +127,14 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 - Agreement expiry: 30 and 7 days before.
 - Electricity: unpaid bill, timing configurable (initially one day after due).
 - Each reminder links to its record, appears once (no duplicates), and disappears when resolved.
-- Version 1: shown in-app (dashboard). Push notifications are a later decision. [open]
+- Shown in-app on the Dashboard for all family members, plus **one daily phone push at 9:00 AM** (summary) once Blaze is on (owner choice 2026-11-21).
+- Reminder types: rent overdue and due within 3 days; agreement ending within 30 / 7 days or expired; tenant electricity due/overdue; unpaid Tata Power bills; own reminders (**title + date only**), any member can mark done.
+- Dashboard figures: rent this month (due/received), outstanding (rent + electricity), occupancy, expenses this month.
 
 ## 10. Reports and exports
 
-- Expected / received / outstanding rent with period detail; electricity charges, collections and unpaid amounts separately; expenses by payer type; primary profit; owner cash surplus; occupancy/vacancy.
-- Filters: building, flat, tenant, date range.
+- **Owner choices (2026-11-21):** six reports — rent collection, outstanding dues, expenses, electricity, occupancy, tenant list (ID numbers masked). **No profit report.** Period: **calendar year (Jan–Dec)**. Filters: building, flat, tenant. Export: **Excel and PDF** (print / Save as PDF).
+- Admins: **Download backup** (Excel of all records) and a **Change history** screen (audit log, admins only).
 - Expected rent is allocated over each charge's covered dates (periods crossing 31 December are split exactly to the paisa). Receipts by payment date, expenses by expense date.
 - Show gross outstanding debt and credit separately as well as the net figure.
 - Export reports, ledgers, collections, outstanding balances and expense breakdowns to Excel and PDF.

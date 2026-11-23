@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router'
+import { NavLink, Outlet, useLocation } from 'react-router'
+import ErrorBoundary from '../components/ErrorBoundary.jsx'
 import { sections } from './navigation.js'
 import UserBox from './UserBox.jsx'
 
@@ -7,12 +8,13 @@ function navClass({ isActive }) {
 }
 
 export default function Layout() {
+  const location = useLocation()
   return (
     <div className="shell">
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand">
           <img src="/favicon.svg" alt="" width="32" height="32" />
-          <span>Family Property</span>
+          <span>Property Manager</span>
         </div>
         <nav>
           {sections.map((s) => (
@@ -26,7 +28,9 @@ export default function Layout() {
       </aside>
 
       <main className="content">
-        <Outlet />
+        <ErrorBoundary resetKey={location.pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       <nav className="bottom-bar" aria-label="Main navigation">

@@ -113,7 +113,8 @@ service cloud.firestore {
     // ---------- audit log (append-only) ----------
 
     match /auditLogs/{entryId} {
-      allow read: if isMember();
+      // Change history is visible to admins only (owner choice 2026-11-21).
+      allow read: if isAdmin();
       allow create: if isMemberAfter()
         && request.resource.data.keys().hasOnly(
              ['actorUid', 'actorEmail', 'action', 'entity', 'entityId', 'changedFields', 'before', 'after', 'at'])
@@ -292,8 +293,9 @@ service cloud.firestore {
       return d.keys().hasAll(['tenantId', 'flatId', 'buildingId', 'moveIn', 'moveOut', 'monthlyRent', 'trackFrom',
                               'createdAt', 'createdBy'])
         && d.keys().hasOnly(['tenantId', 'flatId', 'buildingId', 'moveIn', 'moveOut', 'monthlyRent', 'trackFrom',
-                             'agreementStart', 'agreementEnd', 'notes',
+                             'agreementStart', 'agreementEnd', 'agreementHistory', 'notes',
                              'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && (!('agreementHistory' in d) || (d.agreementHistory is list && d.agreementHistory.size() <= 50))
         && isDate(d.moveIn) && isDate(d.trackFrom) && d.trackFrom >= d.moveIn
         && (d.moveOut == null || (isDate(d.moveOut) && d.moveOut >= d.moveIn))
         && d.monthlyRent is int && d.monthlyRent > 0 && d.monthlyRent <= 100000000
@@ -334,27 +336,272 @@ service cloud.firestore {
         && getAfter(tenancyPath(resource.data.tenancyId)).data.moveOut != null;
     }
 
-    // ---------- documents (metadata for files in Firebase Storage) ----------
-    // The file lives at tenants/{tenantId}/{documentId}; this record describes it.
+    // ---------- documents (links to files in Google Drive) ----------
+    // Each file lives in the uploader's Google Drive and is shared view-only with the family.
+    // Only the uploader can update who it is shared with; nothing else changes; never deleted here.
 
     match /documents/{documentId} {
       allow read: if isMember();
       allow create: if isMember()
-        && request.resource.data.keys().hasAll(['tenantId', 'kind', 'fileName', 'contentType', 'size', 'storagePath',
-                                                 'uploadedBy', 'uploadedAt'])
-        && request.resource.data.keys().hasOnly(['tenantId', 'tenancyId', 'kind', 'label', 'fileName', 'contentType',
-                                                  'size', 'storagePath', 'uploadedBy', 'uploadedAt'])
+        && request.resource.data.keys().hasAll(['tenantId', 'kind', 'fileName', 'contentType', 'size', 'driveFileId',
+                                                 'driveLink', 'sharedWith', 'uploadedBy', 'uploadedAt'])
+        && request.resource.data.keys().hasOnly(['tenantId', 'tenancyId', 'kind', 'label', 'fileName', 'contentType', 'size',
+                                                  'driveFileId', 'driveLink', 'sharedWith', 'uploadedBy', 'uploadedAt'])
         && request.resource.data.kind in ['id-proof', 'agreement']
         && request.resource.data.contentType in ['image/jpeg', 'image/png', 'application/pdf']
         && request.resource.data.size is int && request.resource.data.size > 0
         && request.resource.data.size <= 15 * 1024 * 1024
-        && request.resource.data.storagePath == 'tenants/' + request.resource.data.tenantId + '/' + documentId
+        && request.resource.data.driveFileId is string && request.resource.data.driveFileId.size() > 0
+        && request.resource.data.driveLink is string
+        && request.resource.data.driveLink.matches('^https://(drive|docs)[.]google[.]com/.*')
+        && request.resource.data.sharedWith is list && request.resource.data.sharedWith.size() <= 50
         && optionalText(request.resource.data, 'label', 60)
         && request.resource.data.fileName is string && request.resource.data.fileName.size() <= 200
         && request.resource.data.uploadedBy == myEmail()
         && request.resource.data.uploadedAt == request.time
         && exists(/databases/$(database)/documents/tenants/$(request.resource.data.tenantId));
-      allow update, delete: if false;
+      allow update: if isMember()
+        && resource.data.uploadedBy == myEmail()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sharedWith', 'updatedBy', 'updatedAt'])
+        && request.resource.data.sharedWith is list && request.resource.data.sharedWith.size() <= 50
+        && request.resource.data.updatedBy == myEmail()
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // ---------- charges and payments ----------
+    // Money is integer paise. Records are append-only: nothing is edited or deleted. An admin can
+    // void (deleted = true) or restore a record with a reason; the change is audited.
+
+    function matchesTenancy(d) {
+      return exists(tenancyPath(d.tenancyId))
+        && get(tenancyPath(d.tenancyId)).data.flatId == d.flatId
+        && get(tenancyPath(d.tenancyId)).data.buildingId == d.buildingId;
+    }
+
+    function voidChange() {
+      let d = request.resource.data;
+      return isAdmin()
+        && d.diff(resource.data).affectedKeys().hasOnly(['deleted', 'deletedAt', 'deletedBy', 'deleteReason'])
+        && d.deleted is bool
+        && d.deletedBy == myEmail()
+        && d.deletedAt == request.time
+        && d.deleteReason is string && d.deleteReason.size() > 0 && d.deleteReason.size() <= 300;
+    }
+
+    function validCharge(chargeId) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['tenancyId', 'flatId', 'buildingId', 'account', 'source', 'amount', 'due', 'createdAt', 'createdBy'])
+        && d.keys().hasOnly(['tenancyId', 'flatId', 'buildingId', 'account', 'source', 'amount', 'due', 'start', 'end',
+                             'monthlyRent', 'periodDays', 'occupiedDays', 'corrects', 'reverses', 'occupiedEnd',
+                             'correctedAmount', 'reason', 'units', 'rate', 'billId', 'createdAt', 'createdBy',
+                             'deleted', 'deletedAt', 'deletedBy', 'deleteReason'])
+        && d.account in ['rent', 'electricity']
+        && d.source in ['rent', 'opening', 'adjustment', 'submeter']
+        && (d.source != 'submeter'
+            || (d.account == 'electricity'
+                && d.billId is string
+                && chargeId == d.billId + '_elec_' + d.flatId
+                && existsAfter(/databases/$(database)/documents/bills/$(d.billId))))
+        && d.amount is int && d.amount != 0 && d.amount <= 1000000000 && d.amount >= -1000000000
+        && (d.source == 'adjustment' || d.amount > 0)
+        && isDate(d.due)
+        && (d.source != 'rent' || (isDate(d.start) && chargeId == d.tenancyId + '_rent_' + d.start))
+        && (d.source != 'opening' || (d.reason is string && d.reason.size() <= 300))
+        && optionalText(d, 'reason', 300)
+        && matchesTenancy(d);
+    }
+
+    match /charges/{chargeId} {
+      allow read: if isMember();
+      allow create: if isMember() && validCharge(chargeId) && createStamped() && !('deleted' in request.resource.data);
+      allow update: if voidChange();
+      allow delete: if false;
+    }
+
+    function validPayment() {
+      let d = request.resource.data;
+      return d.keys().hasAll(['tenancyId', 'flatId', 'buildingId', 'account', 'amount', 'date', 'method', 'createdAt', 'createdBy'])
+        && d.keys().hasOnly(['tenancyId', 'flatId', 'buildingId', 'account', 'amount', 'date', 'method', 'reference', 'notes',
+                             'manualAllocations', 'allocationReason', 'allocationBy', 'allocationAt',
+                             'createdAt', 'createdBy', 'deleted', 'deletedAt', 'deletedBy', 'deleteReason'])
+        && d.account in ['rent', 'electricity']
+        && d.amount is int && d.amount > 0 && d.amount <= 1000000000
+        && isDate(d.date)
+        && d.method in ['cash', 'upi', 'bank', 'cheque', 'other']
+        && optionalText(d, 'reference', 100)
+        && optionalText(d, 'notes', 500)
+        && (!('manualAllocations' in d) || d.manualAllocations == null || d.manualAllocations is map)
+        && matchesTenancy(d);
+    }
+
+    // Any member may change how a payment is split across periods, with a reason.
+    function reallocationChange() {
+      let d = request.resource.data;
+      return isMember()
+        && validPayment()
+        && d.diff(resource.data).affectedKeys().hasOnly(['manualAllocations', 'allocationReason', 'allocationBy', 'allocationAt'])
+        && d.allocationReason is string && d.allocationReason.size() > 0 && d.allocationReason.size() <= 300
+        && d.allocationBy == myEmail()
+        && d.allocationAt == request.time;
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isMember();
+      allow create: if isMember() && validPayment() && createStamped() && !('deleted' in request.resource.data);
+      allow update: if voidChange() || reallocationChange();
+      allow delete: if false;
+    }
+
+    // ---------- electricity: settings, bills and sub-meter readings ----------
+
+    match /settings/app {
+      allow read: if isMember();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['electricityRate', 'updatedAt', 'updatedBy'])
+        && request.resource.data.electricityRate is string
+        && request.resource.data.electricityRate.matches('^[0-9]{1,4}([.][0-9]{1,2})?$')
+        && request.resource.data.updatedBy == myEmail()
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    function validBill() {
+      let d = request.resource.data;
+      return d.keys().hasAll(['connectionId', 'billDate', 'periodStart', 'periodEnd', 'amount', 'dueDate', 'payer', 'status',
+                              'createdAt', 'createdBy'])
+        && d.keys().hasOnly(['connectionId', 'billDate', 'periodStart', 'periodEnd', 'amount', 'dueDate', 'payer', 'status',
+                             'paidOn', 'notes', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy',
+                             'deleted', 'deletedAt', 'deletedBy', 'deleteReason'])
+        && exists(/databases/$(database)/documents/connections/$(d.connectionId))
+        && isDate(d.billDate) && isDate(d.periodStart) && isDate(d.periodEnd) && isDate(d.dueDate)
+        && d.periodEnd >= d.periodStart
+        && d.amount is int && d.amount > 0 && d.amount <= 1000000000
+        && d.payer in ['family', 'tenant']
+        && d.status in ['unpaid', 'paid']
+        && (d.status == 'unpaid' || isDate(d.paidOn))
+        && optionalText(d, 'notes', 500);
+    }
+
+    match /bills/{billId} {
+      allow read: if isMember();
+      allow create: if isMember() && validBill() && createStamped() && !('deleted' in request.resource.data);
+      // Members mark a bill paid/unpaid or edit its notes; amounts and dates never change. Admins can void.
+      allow update: if voidChange()
+        || (isMember() && validBill()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paidOn', 'notes', 'updatedAt', 'updatedBy'])
+            && request.resource.data.updatedBy == myEmail()
+            && request.resource.data.updatedAt == request.time);
+      allow delete: if false;
+    }
+
+    match /readings/{readingId} {
+      allow read: if isMember();
+      allow create: if isMember()
+        && request.resource.data.keys().hasAll(['flatId', 'connectionId', 'billId', 'previousReading', 'currentReading', 'units',
+                                                 'previousDate', 'readingDate', 'createdAt', 'createdBy'])
+        && request.resource.data.keys().hasOnly(['flatId', 'connectionId', 'billId', 'previousReading', 'currentReading', 'units',
+                                                  'previousDate', 'readingDate', 'resetReason', 'chargeId',
+                                                  'createdAt', 'createdBy', 'deleted', 'deletedAt', 'deletedBy', 'deleteReason'])
+        && request.resource.data.previousReading.matches('^[0-9]{1,9}([.][0-9]{1,3})?$')
+        && request.resource.data.currentReading.matches('^[0-9]{1,9}([.][0-9]{1,3})?$')
+        && request.resource.data.units.matches('^[0-9]{1,9}([.][0-9]{1,3})?$')
+        && isDate(request.resource.data.previousDate) && isDate(request.resource.data.readingDate)
+        && request.resource.data.readingDate > request.resource.data.previousDate
+        && optionalText(request.resource.data, 'resetReason', 300)
+        && existsAfter(/databases/$(database)/documents/bills/$(request.resource.data.billId))
+        && get(/databases/$(database)/documents/flats/$(request.resource.data.flatId)).data.connectionId == request.resource.data.connectionId
+        && createStamped()
+        && !('deleted' in request.resource.data);
+      allow update: if voidChange();
+      allow delete: if false;
+    }
+
+    // ---------- expense categories ----------
+
+    match /categories/{categoryId} {
+      allow read: if isMember();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasAll(['name', 'archived', 'createdAt', 'createdBy'])
+        && request.resource.data.keys().hasOnly(['name', 'archived', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40
+        && request.resource.data.archived is bool
+        && (resource == null ? createStamped() : updateStamped());
+      allow delete: if false;
+    }
+
+    // ---------- expenses ----------
+    // Family members add expenses. Amount, date, building, flat, payer and the stored split never
+    // change; description, category, payment mode and notes can. Admins can void/restore.
+
+    function validExpense() {
+      let d = request.resource.data;
+      return d.keys().hasAll(['date', 'amount', 'categoryId', 'buildingId', 'payer', 'paymentMode', 'description', 'shares',
+                              'createdAt', 'createdBy'])
+        && d.keys().hasOnly(['date', 'amount', 'categoryId', 'buildingId', 'flatId', 'payer', 'paymentMode', 'description',
+                             'notes', 'shares', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy',
+                             'deleted', 'deletedAt', 'deletedBy', 'deleteReason'])
+        && isDate(d.date)
+        && d.amount is int && d.amount > 0 && d.amount <= 1000000000
+        && d.payer in ['owner', 'tenant']
+        && d.paymentMode in ['cash', 'upi', 'bank', 'cheque', 'other']
+        && d.description is string && d.description.size() > 0 && d.description.size() <= 200
+        && optionalText(d, 'notes', 500)
+        && d.shares is map && d.shares.size() >= 1 && d.shares.size() <= 100
+        && exists(/databases/$(database)/documents/buildings/$(d.buildingId))
+        && exists(/databases/$(database)/documents/categories/$(d.categoryId))
+        && (!('flatId' in d) || d.flatId == null
+            || (exists(/databases/$(database)/documents/flats/$(d.flatId))
+                && get(/databases/$(database)/documents/flats/$(d.flatId)).data.buildingId == d.buildingId
+                && d.shares.keys().hasOnly([d.flatId])));
+    }
+
+    match /expenses/{expenseId} {
+      allow read: if isMember();
+      allow create: if isMember() && validExpense() && createStamped()
+        && !('deleted' in request.resource.data)
+        && get(/databases/$(database)/documents/categories/$(request.resource.data.categoryId)).data.archived == false;
+      allow update: if voidChange()
+        || (isMember() && validExpense()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['categoryId', 'paymentMode', 'description', 'notes', 'updatedAt', 'updatedBy'])
+            && request.resource.data.updatedBy == myEmail()
+            && request.resource.data.updatedAt == request.time);
+      allow delete: if false;
+    }
+
+    // ---------- own reminders (title + date only) ----------
+
+    match /reminders/{reminderId} {
+      allow read: if isMember();
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['title', 'date', 'done', 'createdAt', 'createdBy'])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 80
+        && isDate(request.resource.data.date)
+        && request.resource.data.done == false
+        && createStamped();
+      // Any member can mark a reminder done (or not done); the text never changes.
+      allow update: if isMember()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done', 'doneBy', 'doneAt'])
+        && request.resource.data.done is bool
+        && request.resource.data.doneBy == myEmail()
+        && request.resource.data.doneAt == request.time;
+      allow delete: if false;
+    }
+
+    // ---------- phone push registrations ----------
+    // One document per device token; only the daily push job (server) reads them.
+
+    match /pushTokens/{token} {
+      allow read: if false;
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['email', 'createdAt'])
+        && request.resource.data.email == myEmail()
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.email == myEmail();
     }
 
     // ---------- everything else ----------

@@ -1,11 +1,11 @@
-// Firestore/Storage access for tenants, tenancies and their documents.
-// Every write adds an audit entry in the same transaction/batch. Rules: firestore.rules, storage.rules.
+// Firestore access for tenants, tenancies and their documents.
+// Every write adds an audit entry in the same transaction/batch. Rules: firestore.rules. Files live in Google Drive (services/drive.js).
 //
 // tenants/{id}        one-time details of a person (see validateTenant in src/lib/tenants.js)
 // tenancies/{id}      { tenantId, flatId, buildingId, moveIn, moveOut, monthlyRent (paise), trackFrom,
 //                       agreementStart, agreementEnd, notes, … }
 // occupancy/{flatId}  { tenancyId, since }: exists only while the flat has an active tenancy
-// documents/{id}      metadata of a file stored at tenants/{tenantId}/{id} in Firebase Storage
+// documents/{id}      link to a file in Google Drive (see services/drive.js)
 //
 // Privacy: phone numbers and ID numbers never go into the audit log (only that they changed).
 
@@ -19,10 +19,9 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore'
-import { getBlob, ref, uploadBytes } from 'firebase/storage'
-import { db, storage } from './firebase.js'
+import { db } from './firebase.js'
 import { addAuditEntry } from './audit.js'
-import { checkUpload } from '../lib/tenants.js'
+import { departureCharges, departurePreview } from '../lib/money/index.js'
 
 const SENSITIVE = ['mobile', 'altMobile', 'emergencyMobile', 'idNumber']
 
@@ -60,6 +59,29 @@ export function watchDocuments(tenantId, onChange, onError) {
 const TENANT_AUDIT = ['name', 'members', 'twoWheelers', 'fourWheelers', 'idType', 'idNumber', 'mobile', 'altMobile',
   'emergencyName', 'emergencyRelation', 'emergencyMobile', 'notes']
 const TENANCY_AUDIT = ['flatId', 'moveIn', 'moveOut', 'monthlyRent', 'trackFrom', 'agreementStart', 'agreementEnd', 'notes']
+
+/**
+ * Renews the agreement: the current dates move into agreementHistory and the new dates become
+ * current. `renewal` comes from validateRenewal().
+ */
+export async function renewAgreement(actor, tenancy, renewal) {
+  const batch = writeBatch(db)
+  batch.update(doc(db, 'tenancies', tenancy.id), {
+    agreementStart: renewal.agreementStart,
+    agreementEnd: renewal.agreementEnd,
+    agreementHistory: renewal.agreementHistory,
+    updatedBy: email(actor),
+    updatedAt: serverTimestamp(),
+  })
+  addAuditEntry(batch, actor, {
+    action: 'renew-agreement',
+    entity: 'tenancy',
+    entityId: tenancy.id,
+    before: { agreementStart: tenancy.agreementStart ?? '', agreementEnd: tenancy.agreementEnd ?? '' },
+    after: { agreementStart: renewal.agreementStart, agreementEnd: renewal.agreementEnd },
+  })
+  await batch.commit()
+}
 
 function pick(record, keys) {
   return Object.fromEntries(keys.filter((k) => k in record).map((k) => [k, record[k]]))
@@ -141,10 +163,22 @@ export async function updateTenancyDetails(actor, current, { agreementStart, agr
   await batch.commit()
 }
 
-/** Records a move-out (leaving day included) and frees the flat for the next tenant. */
-export async function recordMoveOut(actor, tenancy, leaveDate) {
+/**
+ * Records a move-out (leaving day included) and frees the flat for the next tenant.
+ * If rent for the leaving period was already charged, an explicit proration adjustment is added
+ * (the original charge is never edited), and any later periods are reversed.
+ * `charges` = the tenancy's charges. Returns the departure preview that was applied.
+ */
+export async function recordMoveOut(actor, tenancy, leaveDate, charges = []) {
   const tenancyRef = doc(db, 'tenancies', tenancy.id)
   const lockRef = doc(db, 'occupancy', tenancy.flatId)
+  const rentCharges = charges.filter((c) => c.tenancyId === tenancy.id && c.account === 'rent')
+  const preview = departurePreview(
+    { id: tenancy.id, moveIn: tenancy.moveIn, monthlyRent: tenancy.monthlyRent },
+    leaveDate,
+    rentCharges,
+  )
+  const adjustments = departureCharges({ id: tenancy.id }, preview)
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(tenancyRef)
     if (!snap.exists()) throw new Error('Tenancy not found.')
@@ -152,6 +186,18 @@ export async function recordMoveOut(actor, tenancy, leaveDate) {
     if (leaveDate < snap.data().moveIn) throw new Error('The leaving date cannot be before the move-in date.')
     tx.update(tenancyRef, { moveOut: leaveDate, updatedBy: email(actor), updatedAt: serverTimestamp() })
     tx.delete(lockRef)
+    for (const c of adjustments) {
+      const data = { ...c, flatId: tenancy.flatId, buildingId: tenancy.buildingId, createdBy: email(actor), createdAt: serverTimestamp() }
+      delete data.id
+      for (const k of Object.keys(data)) if (data[k] === undefined || data[k] === null) delete data[k]
+      tx.set(doc(db, 'charges', c.id), data)
+      addAuditEntry(tx, actor, {
+        action: c.corrects ? 'departure-adjustment' : 'reverse-period',
+        entity: 'charge',
+        entityId: c.id,
+        after: { tenancyId: tenancy.id, amount: c.amount, reason: c.reason },
+      })
+    }
     addAuditEntry(tx, actor, {
       action: 'move-out',
       entity: 'tenancy',
@@ -160,56 +206,10 @@ export async function recordMoveOut(actor, tenancy, leaveDate) {
       after: { moveOut: leaveDate },
     })
   })
+  return preview
 }
 
-/**
- * Uploads an ID proof or agreement file and records it.
- * kind: 'id-proof' | 'agreement'; label: e.g. 'Front', 'Back', 'Agreement'.
- */
-export async function uploadDocument(actor, { tenantId, tenancyId = null, kind, label = '', file }) {
-  const problem = checkUpload(file)
-  if (problem) throw new Error(problem)
-  const recordRef = doc(collection(db, 'documents'))
-  const storagePath = `tenants/${tenantId}/${recordRef.id}`
-  await uploadBytes(ref(storage, storagePath), file, { contentType: file.type })
-  const data = {
-    tenantId,
-    ...(tenancyId ? { tenancyId } : {}),
-    kind,
-    label: label.slice(0, 60),
-    fileName: file.name.slice(0, 200),
-    contentType: file.type,
-    size: file.size,
-    storagePath,
-    uploadedBy: email(actor),
-    uploadedAt: serverTimestamp(),
-  }
-  const batch = writeBatch(db)
-  batch.set(recordRef, data)
-  addAuditEntry(batch, actor, {
-    action: 'upload',
-    entity: 'document',
-    entityId: recordRef.id,
-    after: { tenantId, kind, label: data.label, fileName: data.fileName },
-  })
-  await batch.commit()
-  return recordRef.id
-}
-
-/**
- * Opens a stored file in a new tab using the signed-in user's access (no public link is made).
- * The tab is opened first (synchronously) so phone browsers do not block it as a pop-up.
- */
-export async function openDocument(record) {
-  const tab = window.open('', '_blank')
-  try {
-    const blob = await getBlob(ref(storage, record.storagePath))
-    const url = URL.createObjectURL(new Blob([blob], { type: record.contentType }))
-    if (tab) tab.location.href = url
-    else window.location.href = url
-    setTimeout(() => URL.revokeObjectURL(url), 60_000)
-  } catch (e) {
-    tab?.close()
-    throw e
-  }
+/** All document records (links to Google Drive files), every tenant. */
+export function watchAllDocuments(onChange, onError) {
+  return onSnapshot(collection(db, 'documents'), (snap) => onChange(withIds(snap)), onError)
 }

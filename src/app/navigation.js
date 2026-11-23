@@ -5,7 +5,8 @@ export const sections = [
   { path: '/flats', label: 'Buildings and flats', short: 'Flats', icon: '▦', mobile: true },
   { path: '/collections', label: 'Collections', short: 'Collect', icon: '₹', mobile: true },
   { path: '/expenses', label: 'Expenses', short: 'Expenses', icon: '≡', mobile: true },
-  { path: '/documents', label: 'Documents and reminders', short: 'Documents', icon: '❐' },
+  { path: '/electricity', label: 'Electricity', short: 'Electricity', icon: 'ϟ' },
+  { path: '/documents', label: 'Documents', short: 'Documents', icon: '❐' },
   { path: '/reports', label: 'Reports', short: 'Reports', icon: '◔' },
   { path: '/settings', label: 'Settings', short: 'Settings', icon: '⚙' },
 ]
