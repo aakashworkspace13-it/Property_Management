@@ -45,8 +45,7 @@ export function validateExpense(input, buildingFlatCodes = []) {
   if (!value.buildingId) errors.buildingId = 'Choose the building.'
   if (!['owner', 'tenant'].includes(value.payer)) errors.payer = 'Choose who paid.'
   if (!PAYMENT_METHODS.some((m) => m.value === value.paymentMode)) errors.paymentMode = 'Choose the payment mode.'
-  if (!value.description) errors.description = 'Describe the expense (e.g. "Bathroom tap replaced").'
-  else if (value.description.length > 200) errors.description = 'Keep the description under 200 characters.'
+  if (value.description.length > 200) errors.description = 'Keep the description under 200 characters.'
   if (value.notes.length > 500) errors.notes = 'Notes are too long.'
   if (value.flatId && !buildingFlatCodes.includes(value.flatId)) errors.flatId = 'That flat is not in this building.'
   if (!errors.amount && !errors.buildingId && !errors.flatId) {

@@ -6,6 +6,7 @@ import { getDriveToken, openDriveDocument, updateSharing } from '../../services/
 import { watchAllDocuments } from '../../services/tenants.js'
 import { useMembers } from '../settings/useMembers.js'
 import { useTenancyData } from '../tenants/useTenancyData.js'
+import BackButton from '../../components/BackButton.jsx'
 
 // All ID proofs and agreements (stored in Google Drive), grouped by tenant.
 export default function DocumentsPage() {
@@ -47,6 +48,7 @@ export default function DocumentsPage() {
 
   return (
     <section className="page">
+      <BackButton fallback="/more" mobileOnly />
       <h1>Documents</h1>
       <p className="muted small">
         ID proofs and agreements are kept in the Google Drive of the person who uploaded them and shared view-only with the family.

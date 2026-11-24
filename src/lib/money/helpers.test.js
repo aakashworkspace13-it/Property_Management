@@ -37,11 +37,14 @@ describe('rupeesToPaise', () => {
 
 describe('formatINR', () => {
   it('uses Indian digit grouping', () => {
-    expect(formatINR(483_871)).toBe('₹4,838.71')
-    expect(formatINR(12_345_678)).toBe('₹1,23,456.78')
-    expect(formatINR(1_000_000_000)).toBe('₹1,00,00,000.00')
-    expect(formatINR(5)).toBe('₹0.05')
-    expect(formatINR(-50_000)).toBe('-₹500.00')
+    expect(formatINR(483_871)).toBe('4,839')
+    expect(formatINR(12_345_678)).toBe('1,23,457')
+    expect(formatINR(1_000_000_000)).toBe('1,00,00,000')
+    expect(formatINR(5)).toBe('0')
+    expect(formatINR(483_840)).toBe('4,838')
+    expect(formatINR(50)).toBe('1')
+    expect(formatINR(-50_000)).toBe('-500')
+    expect(formatINR(-150)).toBe('-2')
   })
 })
 

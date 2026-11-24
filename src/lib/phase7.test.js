@@ -24,8 +24,9 @@ describe('validateExpense', () => {
   })
 
   it('reports missing and invalid fields', () => {
-    const { errors } = validateExpense({ ...base, amount: 'x', categoryId: '', payer: 'bank', paymentMode: 'gold', description: '' }, ['B01-G-1'])
+    const { errors } = validateExpense({ ...base, amount: 'x', categoryId: '', payer: 'bank', paymentMode: 'gold', description: 'x'.repeat(201) }, ['B01-G-1'])
     expect(Object.keys(errors).sort()).toEqual(['amount', 'categoryId', 'description', 'payer', 'paymentMode'])
+    expect(validateExpense({ ...base, description: '' }, ['B01-G-1']).errors).toEqual({}) // description is optional
     expect(validateExpense({ ...base, flatId: 'B09-G-1' }, ['B01-G-1']).errors.flatId).toBeTruthy()
     expect(validateExpense(base, []).errors.flatId).toMatch(/flats/)
   })

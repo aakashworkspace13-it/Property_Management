@@ -4,12 +4,13 @@ import Field from '../../components/Field.jsx'
 import { useAuth } from '../auth/auth-context.js'
 import { connectionGroup, connectionKind, connectionStatus } from '../../lib/electricity.js'
 import { formatINR, todayInKolkata } from '../../lib/money/index.js'
-import { flatReference, maskPhone, sortFlats } from '../../lib/property.js'
+import { flatReference, maskPhone, sortFlats, connectionTypeLabel } from '../../lib/property.js'
 import { setBillPaid } from '../../services/electricity.js'
 import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from '../tenants/useTenancyData.js'
 import { useElectricityData } from './useElectricityData.js'
 import BillForm from './BillForm.jsx'
+import BackButton from '../../components/BackButton.jsx'
 
 const STATUS = {
   'no-bill': { label: 'No bill recorded', className: 'pill muted-pill' },
@@ -66,7 +67,7 @@ function ConnectionCard({ connection, flats, buildings, tenants, tenancies, bill
           <span className={s.className}>{s.label}</span>
           <span className="muted small">
             {' '}
-            · {connection.type === 'commercial' ? 'Commercial' : 'Domestic'}
+            · {connectionTypeLabel(connection.type)}
             {kind === 'shared' && ' · sub-meters'}
             {connection.holderName && ` · ${connection.holderName}`}
             {connection.holderPhone && ` (${maskPhone(connection.holderPhone)})`}
@@ -122,7 +123,7 @@ function ConnectionCard({ connection, flats, buildings, tenants, tenancies, bill
 
       {open?.id === connection.caNumber && open.mode === 'history' && (
         <div className="table-wrap">
-          <table className="table">
+          <table className="table stack">
             <thead>
               <tr>
                 <th>Bill date</th>
@@ -136,14 +137,14 @@ function ConnectionCard({ connection, flats, buildings, tenants, tenancies, bill
             <tbody>
               {history.map((b) => (
                 <tr key={b.id}>
-                  <td>{b.billDate}</td>
-                  <td>
+                  <td data-label="Bill date">{b.billDate}</td>
+                  <td data-label="Period">
                     {b.periodStart} to {b.periodEnd}
                   </td>
-                  <td>{formatINR(b.amount)}</td>
-                  <td>{b.dueDate}</td>
-                  <td>{b.payer === 'tenant' ? 'Tenant' : 'Family'}</td>
-                  <td>
+                  <td data-label="Amount">{formatINR(b.amount)}</td>
+                  <td data-label="Due">{b.dueDate}</td>
+                  <td data-label="Payer">{b.payer === 'tenant' ? 'Tenant' : 'Family'}</td>
+                  <td data-label="Status">
                     {b.status === 'paid' ? (
                       `Paid ${b.paidOn}`
                     ) : open.paying === b.id ? (
@@ -189,11 +190,12 @@ export default function ElectricityPage() {
 
   return (
     <section className="page">
+      <BackButton fallback="/more" mobileOnly />
       <h1>Electricity</h1>
       <div className="stats">
         <div className="card stat">
           <span className="muted small">Rate per unit (shared meters)</span>
-          <strong>{rate ? `₹${rate}` : 'Not set'}</strong>
+          <strong>{rate ? `${rate}` : 'Not set'}</strong>
           <Link to="/settings" className="small">
             Change in Settings
           </Link>

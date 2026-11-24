@@ -45,20 +45,22 @@ export function rupeesToPaise(input) {
   return assertPaise(result)
 }
 
-/** Formats paise as Indian rupees with Indian digit grouping, e.g. 12345678 → "₹1,23,456.78". */
+/**
+ * Formats paise for display as whole rupees with Indian digit grouping and no currency sign,
+ * rounded to the nearest rupee (half up), e.g. 12345678 → "1,23,457" (owner choice 2026-11-23).
+ * Display only: stored and compared amounts stay exact paise.
+ */
 export function formatINR(paise) {
   assertPaise(paise)
-  const negative = paise < 0
-  const abs = Math.abs(paise)
-  const rupees = String(Math.floor(abs / 100))
-  const fraction = String(abs % 100).padStart(2, '0')
+  const rounded = divRoundHalfUp(paise, 100)
+  const rupees = String(Math.abs(rounded))
   let grouped = rupees
   if (rupees.length > 3) {
     const last3 = rupees.slice(-3)
     const rest = rupees.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ',')
     grouped = `${rest},${last3}`
   }
-  return `${negative ? '-' : ''}₹${grouped}.${fraction}`
+  return `${rounded < 0 ? '-' : ''}${grouped}`
 }
 
 /** Sum of paise amounts (exact for safe integers). */

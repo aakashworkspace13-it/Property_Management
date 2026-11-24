@@ -54,7 +54,7 @@ export default function ExpenseForm({ buildings, flats, categories, onDone }) {
         <Field label="Date" required error={errors.date}>
           <input type="date" {...bind('date')} />
         </Field>
-        <Field label="Amount (₹)" required error={errors.amount}>
+        <Field label="Amount" required error={errors.amount}>
           <input inputMode="decimal" {...bind('amount')} />
         </Field>
         <Field label="Category" required error={errors.categoryId}>
@@ -111,11 +111,8 @@ export default function ExpenseForm({ buildings, flats, categories, onDone }) {
           </select>
         </Field>
       </div>
-      <Field label="Description" required error={errors.description}>
+      <Field label="Description (optional)" error={errors.description}>
         <input maxLength={200} placeholder="e.g. Bathroom tap replaced" {...bind('description')} />
-      </Field>
-      <Field label="Notes (optional)" error={errors.notes}>
-        <input maxLength={500} {...bind('notes')} />
       </Field>
 
       {value.shares && !values.flatId && Object.keys(value.shares).length > 1 && (

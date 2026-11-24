@@ -98,12 +98,19 @@ export function sortCollectionRows(rows) {
   return [...rows].sort((a, b) => ORDER[a.status] - ORDER[b.status] || String(a.flatId).localeCompare(String(b.flatId)))
 }
 
-/** Rent due and received in [start, end]: charges by due date (no openings), receipts by payment date. */
+/**
+ * Rent due and received in [start, end]: rent periods by due date (no openings), receipts by
+ * payment date. A period reversed at move-out does not count; a period corrected at move-out
+ * counts at its corrected (prorated) amount.
+ */
 export function periodSummary(charges, payments, start, end) {
-  const due = charges
-    .filter((c) => !c.deleted && c.account === 'rent' && c.source === 'rent')
+  const live = charges.filter((c) => !c.deleted && c.account === 'rent')
+  const reversed = new Set(live.filter((c) => c.reverses).map((c) => c.reverses))
+  const corrected = new Map(live.filter((c) => c.corrects).map((c) => [c.corrects, c.correctedAmount]))
+  const due = live
+    .filter((c) => c.source === 'rent' && !reversed.has(c.id))
     .filter((c) => compareDates(c.due, start) >= 0 && compareDates(c.due, end) <= 0)
-    .reduce((s, c) => s + c.amount, 0)
+    .reduce((s, c) => s + (corrected.get(c.id) ?? c.amount), 0)
   return { due, received: receiptsInRange(payments, 'rent', start, end) }
 }
 

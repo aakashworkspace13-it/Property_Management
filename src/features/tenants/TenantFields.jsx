@@ -48,9 +48,22 @@ export default function TenantFields({ values, setValue, errors }) {
               ))}
             </select>
           </Field>
-          <Field label="ID number" required error={errors.idNumber} hint="Shown in full only on the tenant's page.">
-            <input maxLength={30} autoComplete="off" {...bind('idNumber')} />
-          </Field>
+          {values.idType === 'aadhaar' ? (
+            <Field label="Aadhaar number" required error={errors.idNumber} hint="Exactly 12 digits. Shown in full only on the tenant's page.">
+              <input
+                inputMode="numeric"
+                maxLength={12}
+                autoComplete="off"
+                placeholder="12 digits"
+                value={values.idNumber}
+                onChange={(e) => setValue('idNumber', e.target.value.replace(/\D/g, '').slice(0, 12))}
+              />
+            </Field>
+          ) : (
+            <Field label="ID number" required error={errors.idNumber} hint="Shown in full only on the tenant's page.">
+              <input maxLength={30} autoComplete="off" {...bind('idNumber')} />
+            </Field>
+          )}
         </div>
       </fieldset>
 
@@ -68,10 +81,6 @@ export default function TenantFields({ values, setValue, errors }) {
           </Field>
         </div>
       </fieldset>
-
-      <Field label="Notes (optional)" error={errors.notes}>
-        <textarea rows={2} maxLength={1000} {...bind('notes')} />
-      </Field>
     </>
   )
 }

@@ -266,6 +266,7 @@ service cloud.firestore {
         && d.fourWheelers is int && d.fourWheelers >= 0 && d.fourWheelers <= 20
         && d.idType in ['aadhaar', 'pan', 'voter', 'driving', 'passport', 'other']
         && d.idNumber is string && d.idNumber.size() > 0 && d.idNumber.size() <= 30
+        && (d.idType != 'aadhaar' || d.idNumber.matches('^[0-9]{12}$'))
         && optionalText(d, 'notes', 1000);
     }
 
@@ -273,6 +274,20 @@ service cloud.firestore {
       allow read: if isMember();
       allow create: if isMember() && validTenant() && createStamped();
       allow update: if isMember() && validTenant() && updateStamped();
+      allow delete: if false;
+    }
+
+    // Passport photo of a tenant: a small JPEG data URL, added or replaced by any member.
+    match /tenantPhotos/{tenantId} {
+      allow read: if isMember();
+      allow create, update: if isMember()
+        && exists(/databases/$(database)/documents/tenants/$(tenantId))
+        && request.resource.data.keys().hasOnly(['photo', 'updatedBy', 'updatedAt'])
+        && request.resource.data.photo is string
+        && request.resource.data.photo.size() <= 100000
+        && request.resource.data.photo.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
+        && request.resource.data.updatedBy == myEmail()
+        && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
 
@@ -389,6 +404,21 @@ service cloud.firestore {
         && d.deleteReason is string && d.deleteReason.size() > 0 && d.deleteReason.size() <= 300;
     }
 
+    // Undo straight after a one-tap payment: the person who saved it may cancel it within 2 minutes
+    // (the app offers Undo for 10 seconds). It stays in the ledger as voided, like an admin void.
+    function undoChange() {
+      let d = request.resource.data;
+      return isMember()
+        && resource.data.createdBy == myEmail()
+        && !('deleted' in resource.data)
+        && request.time < resource.data.createdAt + duration.value(2, 'm')
+        && d.diff(resource.data).affectedKeys().hasOnly(['deleted', 'deletedAt', 'deletedBy', 'deleteReason'])
+        && d.deleted == true
+        && d.deletedBy == myEmail()
+        && d.deletedAt == request.time
+        && d.deleteReason == 'Undone right after saving';
+    }
+
     function validCharge(chargeId) {
       let d = request.resource.data;
       return d.keys().hasAll(['tenancyId', 'flatId', 'buildingId', 'account', 'source', 'amount', 'due', 'createdAt', 'createdBy'])
@@ -449,7 +479,7 @@ service cloud.firestore {
     match /payments/{paymentId} {
       allow read: if isMember();
       allow create: if isMember() && validPayment() && createStamped() && !('deleted' in request.resource.data);
-      allow update: if voidChange() || reallocationChange();
+      allow update: if voidChange() || reallocationChange() || undoChange();
       allow delete: if false;
     }
 
@@ -546,7 +576,7 @@ service cloud.firestore {
         && d.amount is int && d.amount > 0 && d.amount <= 1000000000
         && d.payer in ['owner', 'tenant']
         && d.paymentMode in ['cash', 'upi', 'bank', 'cheque', 'other']
-        && d.description is string && d.description.size() > 0 && d.description.size() <= 200
+        && d.description is string && d.description.size() <= 200
         && optionalText(d, 'notes', 500)
         && d.shares is map && d.shares.size() >= 1 && d.shares.size() <= 100
         && exists(/databases/$(database)/documents/buildings/$(d.buildingId))

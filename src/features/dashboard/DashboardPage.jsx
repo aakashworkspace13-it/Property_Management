@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../auth/auth-context.js'
 import { formatINR, todayInKolkata } from '../../lib/money/index.js'
-import { computeReminders, dashboardFigures } from '../../lib/reminders.js'
+import { floorOrder, occupancy } from '../../lib/property.js'
+import { computeReminders } from '../../lib/reminders.js'
+import { allocatedCharges, monthLabel, overviewRange, periodOverview, rentTree } from '../../lib/overview.js'
+import RoomsGrid from './RoomsGrid.jsx'
+import RentTree from './RentTree.jsx'
+import BuildingPicker from './BuildingPicker.jsx'
 import { addReminder, setReminderDone, watchOwnReminders } from '../../services/reminders.js'
 import { useCollectionData } from '../collections/useCollectionData.js'
 import { useEnsureDueCharges } from '../collections/useEnsureDueCharges.js'
@@ -47,14 +52,21 @@ function AddReminder({ actor }) {
   )
 }
 
+function shortDate(date) {
+  const [y, m, d] = date.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+}
+
 export default function DashboardPage() {
   const { user, member } = useAuth()
   const today = todayInKolkata()
-  const { flats, connections, loading: pLoading } = usePropertyData()
+  const { buildings, flats, connections, loading: pLoading } = usePropertyData()
   const { tenants, tenancies, loading: tLoading } = useTenancyData()
   const { charges, payments, loading: cLoading } = useCollectionData()
   const { bills, loading: eLoading } = useElectricityData()
   const { expenses, loading: xLoading } = useExpenseData()
+  const [period, setPeriod] = useState('month') // 'month' | 'year'
+  const [chosen, setChosen] = useState([]) // building codes; empty = all buildings
   const [ownReminders, setOwnReminders] = useState(null)
   const [error, setError] = useState(null)
 
@@ -73,8 +85,18 @@ export default function DashboardPage() {
   if (!ready || eLoading || xLoading || !ownReminders) return <p className="muted">Loading…</p>
 
   const data = { tenancies, tenants, flats, connections, charges, payments, bills, expenses, ownReminders }
-  const figures = dashboardFigures(data, today)
   const reminders = computeReminders(data, today)
+  const range = overviewRange(period, today)
+  const base = { rows: allocatedCharges(tenancies, charges, payments, today), tenancies, payments, expenses }
+  const sortedBuildings = [...buildings].sort((a, b) => a.code.localeCompare(b.code))
+  const scope = chosen.filter((c) => buildings.some((b) => b.code === c))
+  const shownBuildings = scope.length ? sortedBuildings.filter((b) => scope.includes(b.code)) : sortedBuildings
+  const shownFlats = flats.filter((f) => shownBuildings.some((b) => b.code === f.buildingId))
+  const total = periodOverview(base, range, scope)
+  const tree = rentTree(base, range, shownBuildings, shownFlats, (f) => -floorOrder(f))
+  const rangeText = period === 'month' ? monthLabel(today) : `${shortDate(range.start)} – ${shortDate(today)}`
+  const st = shownFlats.map((f) => occupancy(f, tenancies, today))
+  const counts = { occupied: st.filter((x) => x === 'occupied').length, vacant: st.filter((x) => x === 'vacant').length, ownUse: st.filter((x) => x === 'own-use').length }
 
   async function markDone(reminderId) {
     const r = ownReminders.find((x) => x.id === reminderId)
@@ -90,31 +112,66 @@ export default function DashboardPage() {
       <h1>Hello{member?.name ? `, ${member.name.split(' ')[0]}` : ''}</h1>
       {(error || genError) && <p className="error small">{error || genError}</p>}
 
+      <div className="period-bar">
+        <BuildingPicker buildings={sortedBuildings} value={scope} onChange={setChosen} />
+        <div className="segmented" role="tablist">
+          <button type="button" role="tab" aria-selected={period === 'month'} className={period === 'month' ? 'active' : ''} onClick={() => setPeriod('month')}>
+            This month
+          </button>
+          <button type="button" role="tab" aria-selected={period === 'year'} className={period === 'year' ? 'active' : ''} onClick={() => setPeriod('year')}>
+            Year to date
+          </button>
+        </div>
+        <span className="muted small">{rangeText}</span>
+      </div>
+
       <div className="stats">
         <Link to="/collections" className="card stat stat-link">
-          <span className="muted small">Rent this month</span>
-          <strong>{formatINR(figures.rentReceived)}</strong>
-          <span className="muted small">received of {formatINR(figures.rentDue)} due</span>
+          <span className="muted small">Total rent due</span>
+          <strong>{formatINR(total.rent.due)}</strong>
         </Link>
         <Link to="/collections" className="card stat stat-link">
-          <span className="muted small">Outstanding (rent + electricity)</span>
-          <strong>{formatINR(figures.outstanding)}</strong>
+          <span className="muted small">Rent received</span>
+          <strong className="ok-text">{formatINR(total.rent.received)}</strong>
         </Link>
-        <Link to="/flats" className="card stat stat-link">
-          <span className="muted small">Flats</span>
-          <strong>
-            {figures.occupied} occupied · {figures.vacant} vacant
-          </strong>
-          <span className="muted small">{figures.ownUse} own use</span>
+        <Link to="/collections" className="card stat stat-link">
+          <span className="muted small">Remaining balance</span>
+          <strong className={total.rent.balance > 0 ? 'warn-text' : ''}>{formatINR(total.rent.balance)}</strong>
+        </Link>
+        <Link to="/collections" className="card stat stat-link">
+          <span className="muted small">Overdue rent</span>
+          <strong className={total.rent.overdue > 0 ? 'error-text' : ''}>{formatINR(total.rent.overdue)}</strong>
+          <span className="muted small">
+            {total.rent.overdueTenants} tenant{total.rent.overdueTenants === 1 ? '' : 's'}
+          </span>
+        </Link>
+        <Link to="/electricity" className="card stat stat-link">
+          <span className="muted small">Electricity</span>
+          <strong>{formatINR(total.electricity.received)}</strong>
+          <span className="muted small">received of {formatINR(total.electricity.due)} due</span>
         </Link>
         <Link to="/expenses" className="card stat stat-link">
-          <span className="muted small">Expenses this month</span>
-          <strong>{formatINR(figures.expenses.total)}</strong>
+          <span className="muted small">Expenses</span>
+          <strong>{formatINR(total.expenses.total)}</strong>
           <span className="muted small">
-            family {formatINR(figures.expenses.owner)} · tenant {formatINR(figures.expenses.tenant)}
+            family {formatINR(total.expenses.owner)} · tenant {formatINR(total.expenses.tenant)}
           </span>
         </Link>
       </div>
+
+      <h2 className="section-title">
+        Occupancy{' '}
+        <span className="muted small">
+          <span className="ok-text">{counts.occupied} occupied</span> · <span className="warn-text">{counts.vacant} vacant</span>
+          {counts.ownUse > 0 && ` · ${counts.ownUse} own use`}
+        </span>
+      </h2>
+      <RoomsGrid buildings={shownBuildings} flats={shownFlats} tenancies={tenancies} today={today} />
+
+      <h2 className="section-title">
+        Rent by building <span className="muted small">{rangeText} · tap to open</span>
+      </h2>
+      <RentTree tree={tree} tenancies={tenancies} tenants={tenants} today={today} />
 
       <section className="card section">
         <h2>Reminders</h2>

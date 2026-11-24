@@ -97,3 +97,16 @@ describe('sorting and summaries', () => {
     })
   })
 })
+
+describe('periodSummary after a move-out', () => {
+  it('does not count periods reversed at move-out, and counts a prorated last period at its corrected amount', () => {
+    const t = { ...tenancy, moveIn: '2025-01-01', trackFrom: '2025-01-01' }
+    const cs = dueRentCharges(t, [], '2025-04-10') // Jan, Feb, Mar, Apr issued before the move-out was recorded
+    const preview = departurePreview({ id: t.id, moveIn: t.moveIn, monthlyRent: t.monthlyRent }, '2025-02-14', cs)
+    const all = [...cs, ...departureCharges({ id: t.id }, preview)]
+    expect(periodSummary(all, [], '2025-04-01', '2025-04-30').due).toBe(0) // April reversed
+    expect(periodSummary(all, [], '2025-03-01', '2025-03-31').due).toBe(0) // March reversed
+    expect(periodSummary(all, [], '2025-02-01', '2025-02-28').due).toBe(preview.finalCharge) // 14 of 28 days
+    expect(periodSummary(all, [], '2025-01-01', '2025-01-31').due).toBe(1_000_000)
+  })
+})

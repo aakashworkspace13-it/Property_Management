@@ -10,6 +10,7 @@ import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from '../tenants/useTenancyData.js'
 import { useCollectionData } from './useCollectionData.js'
 import PaymentForm from './PaymentForm.jsx'
+import BackButton from '../../components/BackButton.jsx'
 
 const STATUS_LABEL = { paid: 'Paid', partial: 'Part paid', unpaid: 'Unpaid' }
 
@@ -19,7 +20,7 @@ function friendly(e) {
 
 function describeCharge(c) {
   if (c.source === 'opening') return c.start ? `Opening balance ${c.start} to ${c.end}` : 'Opening balance (dates unknown)'
-  if (c.source === 'submeter') return `${c.start} to ${c.end} · ${c.units} units × ₹${c.rate}`
+  if (c.source === 'submeter') return `${c.start} to ${c.end} · ${c.units} units × ${c.rate}`
   return `${c.start} to ${c.end}${c.occupiedDays && c.occupiedDays < c.periodDays ? ` (${c.occupiedDays} of ${c.periodDays} days)` : ''}`
 }
 
@@ -52,7 +53,7 @@ function OpeningForm({ tenancy, charges, actor, onDone }) {
     <form className="form panel-form" onSubmit={save}>
       <h3>Add opening balance (rent owed from before the app)</h3>
       <div className="form-row">
-        <Field label="Amount owed (₹)" required>
+        <Field label="Amount owed" required>
           <input inputMode="decimal" {...bind('amount')} />
         </Field>
         <Field label="Due date" required>
@@ -209,9 +210,7 @@ export default function LedgerPage() {
 
   return (
     <section className="page narrow">
-      <p className="muted small">
-        <Link to="/collections">← Collections</Link>
-      </p>
+      <BackButton fallback="/collections" />
       <div className="page-header">
         <h1>{account === 'electricity' ? 'Electricity ledger' : 'Rent ledger'}</h1>
         <div className="segmented" role="tablist">
@@ -291,7 +290,7 @@ export default function LedgerPage() {
           </p>
         ) : (
           <div className="table-wrap">
-            <table className="table">
+            <table className="table stack">
               <thead>
                 <tr>
                   <th>Period</th>
@@ -305,15 +304,15 @@ export default function LedgerPage() {
               <tbody>
                 {[...ledger.rows].reverse().map((r) => (
                   <tr key={r.id}>
-                    <td>{describeCharge(r)}</td>
-                    <td>{r.due}</td>
-                    <td>
+                    <td data-label="Period">{describeCharge(r)}</td>
+                    <td data-label="Due">{r.due}</td>
+                    <td data-label="Amount">
                       {formatINR(r.amount - r.adjusted)}
                       {r.adjusted > 0 && <div className="muted small">was {formatINR(r.amount)}, adjusted</div>}
                     </td>
-                    <td>{formatINR(r.received)}</td>
-                    <td>{formatINR(r.remaining)}</td>
-                    <td>
+                    <td data-label="Received">{formatINR(r.received)}</td>
+                    <td data-label="Left">{formatINR(r.remaining)}</td>
+                    <td data-label="Status">
                       {STATUS_LABEL[r.status]}
                       {r.overdue && <span className="error small"> · overdue</span>}
                     </td>
@@ -352,7 +351,6 @@ export default function LedgerPage() {
               <li key={p.id} className={p.deleted ? 'inactive' : ''}>
                 <div className="member-main">
                   <strong>{formatINR(p.amount)}</strong> · {p.date} · {methodLabel(p.method)}
-                  {p.reference && <span className="muted small"> · ref {p.reference}</span>}
                   {p.deleted && <span className="pill off">Voided</span>}
                   {p.manualAllocations && <span className="pill muted-pill">Manual split</span>}
                   <div className="muted small">

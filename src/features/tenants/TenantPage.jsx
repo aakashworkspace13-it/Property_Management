@@ -12,7 +12,10 @@ import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from './useTenancyData.js'
 import FilePicker from './FilePicker.jsx'
 import TenantFields from './TenantFields.jsx'
+import TenantPhoto from './TenantPhoto.jsx'
 import { tenantToForm } from './tenant-form.js'
+import BackButton from '../../components/BackButton.jsx'
+import TapToEdit from '../../components/TapToEdit.jsx'
 
 const AGREEMENT = {
   none: { label: 'No agreement dates', className: 'pill muted-pill' },
@@ -191,9 +194,6 @@ function EditAgreement({ tenancy, actor, onDone }) {
           <input type="date" {...bind('agreementEnd')} />
         </Field>
       </div>
-      <Field label="Notes">
-        <textarea rows={2} maxLength={1000} {...bind('notes')} />
-      </Field>
       <div className="form-actions">
         <button type="submit" className="button primary" disabled={busy}>
           {busy ? 'Saving…' : 'Save'}
@@ -277,10 +277,14 @@ export default function TenantPage() {
 
   return (
     <section className="page narrow">
-      <h1>{tenant.name}</h1>
+      <BackButton fallback="/flats" />
+      <div className="tenant-title">
+        <TenantPhoto tenantId={tenant.id} name={tenant.name} actor={user} />
+        <h1>{tenant.name}</h1>
+      </div>
       {failedUploads?.length > 0 && (
         <p className="notice error-notice">
-          The tenant was saved, but these files did not upload: {failedUploads.join(', ')}. Add them again under Documents.
+          The tenant was saved, but these files did not upload: {failedUploads.join(', ')}. Add them again on this page.
         </p>
       )}
 
@@ -288,12 +292,9 @@ export default function TenantPage() {
         <EditTenant tenant={tenant} actor={user} onDone={() => setEditing(null)} />
       ) : (
         <section className="card section">
-          <div className="page-header">
+          <TapToEdit as="div" className="page-header" label="Edit details" onEdit={() => setEditing('tenant')}>
             <h2>Details</h2>
-            <button type="button" className="button small-button" onClick={() => setEditing('tenant')}>
-              Edit
-            </button>
-          </div>
+          </TapToEdit>
           <div className="detail-grid">
             <Detail label="Mobile">{formatMobile(tenant.mobile)}</Detail>
             <Detail label="Alternate number">{formatMobile(tenant.altMobile)}</Detail>
@@ -313,7 +314,6 @@ export default function TenantPage() {
                 `${tenant.emergencyName}${tenant.emergencyRelation ? ` (${tenant.emergencyRelation})` : ''} · ${formatMobile(tenant.emergencyMobile)}`}
             </Detail>
           </div>
-          {tenant.notes && <p className="muted">{tenant.notes}</p>}
         </section>
       )}
 
@@ -342,9 +342,9 @@ export default function TenantPage() {
                       Renew agreement
                     </button>
                   )}
-                  {editing !== t.id && (
-                    <button type="button" className="button small-button" onClick={() => setEditing(t.id)}>
-                      Edit agreement
+                  {editing !== t.id && !t.agreementStart && !t.agreementEnd && (
+                    <button type="button" className="button small-button primary" onClick={() => setEditing(t.id)}>
+                      Add agreement
                     </button>
                   )}
                 </div>
@@ -354,11 +354,17 @@ export default function TenantPage() {
                 <Detail label="Move-in">{t.moveIn}</Detail>
                 <Detail label="Move-out">{t.moveOut}</Detail>
                 <Detail label="Rent tracked from">{t.trackFrom}</Detail>
-                <Detail label="Agreement">
-                  {t.agreementStart || t.agreementEnd ? `${t.agreementStart || '?'} to ${t.agreementEnd || '?'}` : ''}
-                </Detail>
+                {t.agreementStart || t.agreementEnd ? (
+                  <div className="detail">
+                    <span className="muted small">Agreement</span>
+                    <TapToEdit label="Edit agreement" onEdit={() => setEditing(t.id)}>
+                      {`${t.agreementStart || '?'} to ${t.agreementEnd || '?'}`}
+                    </TapToEdit>
+                  </div>
+                ) : (
+                  <Detail label="Agreement">Not added yet</Detail>
+                )}
               </div>
-              {t.notes && <p className="muted small">{t.notes}</p>}
               {t.agreementHistory?.length > 0 && (
                 <p className="muted small">
                   Earlier agreements: {[...t.agreementHistory].reverse().map((h) => `${h.start || '?'} to ${h.end || '?'}`).join(' · ')}

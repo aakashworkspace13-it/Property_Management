@@ -45,11 +45,11 @@ export default function ElectricityRateSection() {
       <h2>Electricity rate</h2>
       <p className="muted">
         Rupees per unit charged to tenants on shared meters (sub-meters). Current rate:{' '}
-        <strong>{current === null ? '…' : current ? `₹${current} per unit` : 'not set'}</strong>.
+        <strong>{current === null ? '…' : current ? `${current} per unit` : 'not set'}</strong>.
       </p>
       {isAdmin ? (
         <form className="form inline-form" onSubmit={save}>
-          <Field label="Rate per unit (₹)" hint="e.g. 4 or 6.50">
+          <Field label="Rate per unit" hint="e.g. 4 or 6.50">
             <input inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} />
           </Field>
           <div className="form-actions">

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { collectionRow, monthRange, periodSummary, sortCollectionRows } from '../../lib/collections.js'
 import { formatINR, todayInKolkata } from '../../lib/money/index.js'
@@ -8,6 +8,8 @@ import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from '../tenants/useTenancyData.js'
 import { useCollectionData } from './useCollectionData.js'
 import PaymentForm from './PaymentForm.jsx'
+import { useAuth } from '../auth/auth-context.js'
+import { newPaymentId, recordPayment, undoPayment } from '../../services/collections.js'
 
 const STATUS = {
   overdue: { label: 'Overdue', className: 'pill off' },
@@ -27,20 +29,60 @@ function shortPeriod(c) {
   return c ? `${c.start} to ${c.end}` : ''
 }
 
+const UNDO_SECONDS = 10
+
 export default function CollectionsPage() {
+  const { user } = useAuth()
   const { buildings, flats, loading: pLoading } = usePropertyData()
   const { tenants, tenancies, loading: tLoading } = useTenancyData()
   const { charges, payments, loading: cLoading, error } = useCollectionData()
   const [filter, setFilter] = useState('todo')
   const [query, setQuery] = useState('')
-  const [open, setOpen] = useState(null) // { tenancyId, quick }
+  const [open, setOpen] = useState(null) // { tenancyId, account? } — the full payment form
   const [message, setMessage] = useState(null)
+  const [saving, setSaving] = useState(null) // tenancyId while a one-tap payment saves
+  const [undo, setUndo] = useState(null) // { paymentId, text } for a few seconds after a one-tap save
+  const [quickError, setQuickError] = useState(null)
+
+  useEffect(() => {
+    if (!undo) return undefined
+    const timer = setTimeout(() => setUndo(null), UNDO_SECONDS * 1000)
+    return () => clearTimeout(timer)
+  }, [undo])
+
+  /** One tap: saves the full amount now, dated today, by cash or UPI. */
+  async function quickPay(row, account, method, amount) {
+    setSaving(row.tenancy.id)
+    setQuickError(null)
+    setMessage(null)
+    const id = newPaymentId()
+    try {
+      await recordPayment(user, { id, tenancy: row.tenancy, account, amount, date: today, method })
+      const what = account === 'electricity' ? 'electricity' : 'rent'
+      setUndo({ paymentId: id, text: `Saved ${formatINR(amount)} ${what} from ${row.tenant?.name ?? 'tenant'} (${method === 'upi' ? 'UPI' : 'cash'}, today).` })
+    } catch (e) {
+      setQuickError(e.code === 'permission-denied' ? 'The database refused this payment (permission denied).' : `Not saved: ${e.message}`)
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  async function undoLast() {
+    const { paymentId } = undo
+    setUndo(null)
+    try {
+      await undoPayment(user, paymentId)
+      setMessage('Payment cancelled.')
+    } catch (e) {
+      setQuickError(e.code === 'permission-denied' ? 'Too late to undo; an admin can void it from the rent ledger.' : e.message)
+    }
+  }
   const today = todayInKolkata()
   const loading = pLoading || tLoading || cLoading
   // Create rent charges for periods that have started (idempotent; safe on several devices).
   const genError = useEnsureDueCharges(tenancies, charges, today, !loading)
 
-  const rows = useMemo(() => {
+  const rows = (() => {
     if (loading) return []
     const list = tenancies
       .map((t) => {
@@ -59,7 +101,7 @@ export default function CollectionsPage() {
       })
       .filter(Boolean)
     return sortCollectionRows(list)
-  }, [loading, tenancies, charges, payments, flats, buildings, tenants, today])
+  })()
 
   const month = monthRange(today)
   const summary = loading ? null : periodSummary(charges, payments, month.start, month.end)
@@ -112,7 +154,16 @@ export default function CollectionsPage() {
         </div>
       )}
 
+      {undo && (
+        <div className="undo-bar" role="status">
+          <span>{undo.text}</span>
+          <button type="button" className="button small-button" onClick={undoLast}>
+            Undo
+          </button>
+        </div>
+      )}
       {message && <p className="success">{message}</p>}
+      {quickError && <p className="error">{quickError}</p>}
 
       {!loading && (
         <div className="toolbar">
@@ -176,24 +227,37 @@ export default function CollectionsPage() {
               </div>
             )}
             {!isOpen && (r.outstanding > 0 || r.electricityOutstanding > 0 || r.living) && (
-              <div className="form-actions">
+              <div className="quick-pay">
                 {r.currentRemaining > 0 && (
-                  <button type="button" className="button primary" onClick={() => setOpen({ tenancyId: r.tenancy.id, quick: true })}>
-                    Full rent received · {formatINR(r.quickAmount)}
-                  </button>
+                  <div className="quick-line">
+                    <span className="quick-label">
+                      Full rent received <strong>{formatINR(r.quickAmount)}</strong>
+                    </span>
+                    <button type="button" className="button primary" disabled={saving === r.tenancy.id} onClick={() => quickPay(r, 'rent', 'cash', r.quickAmount)}>
+                      Cash
+                    </button>
+                    <button type="button" className="button primary" disabled={saving === r.tenancy.id} onClick={() => quickPay(r, 'rent', 'upi', r.quickAmount)}>
+                      UPI
+                    </button>
+                  </div>
                 )}
-                <button type="button" className="button" onClick={() => setOpen({ tenancyId: r.tenancy.id, quick: false })}>
-                  {r.currentRemaining > 0 ? 'Other amount' : 'Record rent payment'}
-                </button>
                 {r.electricityOutstanding > 0 && (
-                  <button
-                    type="button"
-                    className="button"
-                    onClick={() => setOpen({ tenancyId: r.tenancy.id, quick: false, account: 'electricity' })}
-                  >
-                    Electricity received · {formatINR(r.electricityOutstanding)}
-                  </button>
+                  <div className="quick-line">
+                    <span className="quick-label">
+                      Electricity received <strong>{formatINR(r.electricityOutstanding)}</strong>
+                    </span>
+                    <button type="button" className="button" disabled={saving === r.tenancy.id} onClick={() => quickPay(r, 'electricity', 'cash', r.electricityOutstanding)}>
+                      Cash
+                    </button>
+                    <button type="button" className="button" disabled={saving === r.tenancy.id} onClick={() => quickPay(r, 'electricity', 'upi', r.electricityOutstanding)}>
+                      UPI
+                    </button>
+                  </div>
                 )}
+                <button type="button" className="link-button" onClick={() => setOpen({ tenancyId: r.tenancy.id, quick: false })}>
+                  {r.currentRemaining > 0 ? 'Different amount or date' : 'Record rent payment'}
+                </button>
+                {saving === r.tenancy.id && <span className="muted small"> Saving…</span>}
               </div>
             )}
             {isOpen && (
@@ -203,8 +267,7 @@ export default function CollectionsPage() {
                 charges={charges.filter(mine)}
                 payments={payments.filter(mine)}
                 displayedCharge={account === 'rent' ? r.current : null}
-                defaultAmount={account === 'electricity' ? r.electricityOutstanding : open.quick ? r.quickAmount : null}
-                quick={open.quick}
+                defaultAmount={account === 'electricity' ? r.electricityOutstanding : null}
                 onDone={(result) => {
                   setOpen(null)
                   if (result) setMessage(`Saved ${formatINR(result.amount)} from ${r.tenant?.name ?? 'tenant'}.`)

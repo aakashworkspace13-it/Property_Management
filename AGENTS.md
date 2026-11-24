@@ -14,7 +14,7 @@ The requirements were carried over from an earlier Flutter + Python prototype ("
 - React + Vite (JavaScript) for the UI, React Router for navigation.
 - Firebase Authentication for family sign-in; Firestore for data; **Google Drive** for ID proofs and agreements (uploader's Drive, shared view-only with the family; the app stores only the link; Drive permission limited to files the app created); Firebase Hosting for deployment. Firebase Storage is not used.
 - PWA for install on Android and desktop; iPhone via the browser.
-- No custom backend. The only server code is one scheduled Cloud Function (`functions/`) that sends the daily 9 AM reminder push; it reuses `src/lib` (copied to `functions/shared` on deploy) and needs the Blaze plan. Money logic lives in pure, unit-tested functions under `src/lib/`.
+- No custom backend. The daily 9 AM reminders (phone push + email) are sent by a free Google Apps Script in the owner's Google account (`apps-script/`, built from `src/lib` with `npm run apps-script`). A Cloud Function version (`functions/`) exists for if the Blaze plan is ever turned on. Money logic lives in pure, unit-tested functions under `src/lib/`.
 - App name on phones: **Property Manager**. Published at https://property-management-a5e84.web.app (Firebase Hosting) — only after the owner's OK.
 
 ### Layout

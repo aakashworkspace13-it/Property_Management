@@ -16,7 +16,8 @@
     "deploy:rules": "node scripts/firebase.js deploy --only firestore:rules --project prod",
     "deploy:functions": "node scripts/firebase.js deploy --only functions --project prod",
     "deploy:hosting": "npm run build && node scripts/firebase.js deploy --only hosting --project prod",
-    "icons": "node scripts/make-icons.js"
+    "icons": "node scripts/make-icons.js",
+    "apps-script": "node scripts/build-apps-script.js"
   },
   "dependencies": {
     "firebase": "^13.1.0",

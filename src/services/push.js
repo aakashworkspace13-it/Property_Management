@@ -1,6 +1,6 @@
 // Phone push notifications (daily 9 AM summary). This device registers its push token in
-// pushTokens/{token}; the scheduled server job (functions/) sends the summary.
-// Needs the Blaze plan for the job and a web-push key in VITE_FIREBASE_VAPID_KEY.
+// pushTokens/{token}; the daily Google Apps Script (apps-script/, free) sends the summary.
+// Needs a web-push key in VITE_FIREBASE_VAPID_KEY.
 
 import { deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { deleteToken, getMessaging, getToken, isSupported } from 'firebase/messaging'

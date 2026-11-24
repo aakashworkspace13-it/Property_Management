@@ -1,6 +1,6 @@
 {
   "project": "Family Property Manager",
-  "updated": "2026-11-23 12:34 IST",
+  "updated": "2026-11-24 21:13 IST",
   "statuses": [
     "Not started",
     "In progress",
@@ -10,14 +10,13 @@
   ],
   "current": {
     "phase": 11,
-    "step": "Owner reviews the app and lists changes; publish only when asked.",
-    "comment": "All phases built; Google Drive documents verified live."
+    "step": "Owner review continues; publish only when asked.",
+    "comment": "Owner review changes 3: dashboard filter/room board/rent tree, inline add tenant, whole-rupee amounts, fewer fields."
   },
   "next": [
-    "Owner: review the app and list any changes.",
-    "Owner: commit Phases 5 onwards.",
-    "Owner: upgrade to Blaze, then deploy the 9 AM push function and add the web-push key (B3, B11).",
-    "Publish to Firebase Hosting only when the owner asks (B12)."
+    "Owner: generate the web-push key (B11) for phone push.",
+    "Owner: review the app; publish only when asked (B12; phones need the published app for push).",
+    "Owner: commit Phases 5 onwards."
   ],
   "criticalPath": [
     0,
@@ -296,6 +295,42 @@
           "title": "Security rules + tests for buildings, flats, connections",
           "status": "Done",
           "comment": "11 new rules tests (27 total), all passing. Deployed 2026-11-20."
+        },
+        {
+          "id": "3.10",
+          "title": "Building drawn as floors and flats; tap a flat for details under the building",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Checked live in the app."
+        },
+        {
+          "id": "3.11",
+          "title": "Horizontal tenant timeline per flat (tenants and empty spells, Earlier/Later scroll)",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. flatTimeline unit-tested; checked live and with sample history."
+        },
+        {
+          "id": "3.12",
+          "title": "Connection type shown as Dom / Com",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23."
+        },
+        {
+          "id": "3.13",
+          "title": "Tap a vacant flat: + Add tenant opens the full form inline",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. AddTenantForm shared by the page and the flat panel; checked live."
+        },
+        {
+          "id": "3.14",
+          "title": "Timeline as same-size cards with details; Earlier/Later move one card",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Checked live on desktop and at phone width."
+        },
+        {
+          "id": "3.15",
+          "title": "Vacant flat opens its flat page with the add-tenant form; one + Add flat (choose building); Edit hidden until the heading is tapped",
+          "status": "Done",
+          "comment": "Owner request 2026-11-24. Checked live."
         }
       ]
     },
@@ -365,6 +400,24 @@
           "title": "Two TEST tenants entered by the owner through the form",
           "status": "Verified",
           "comment": "Added in the live app through the real form (2026-11-21): TEST Tenant One on B04-G-1 (Rs 8,000, shared meter) and TEST Tenant Two on B05-G-F (Rs 12,000, own meter). No files yet (Blaze)."
+        },
+        {
+          "id": "4.10",
+          "title": "Tenant passport photo (camera or gallery, small copy in the app)",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Rules deployed; checked live: photo saved for TEST Tenant One and shown after reload."
+        },
+        {
+          "id": "4.11",
+          "title": "TEST Tenant Three (past) and Four (current) in 120 Gaj New Sardar / Ground / Back for the timeline",
+          "status": "Done",
+          "comment": "Synthetic test data in the live project, 2026-11-23. Four extra charges raised by another open app copy after Three left were reversed with audited adjustments."
+        },
+        {
+          "id": "4.12",
+          "title": "Agreement optional (Add agreement later); Aadhaar exactly 12 digits",
+          "status": "Done",
+          "comment": "Owner request 2026-11-24. Unit + rules tests; Aadhaar rule deployed 2026-11-24. Existing 4 Aadhaar numbers checked: all 12 digits."
         }
       ]
     },
@@ -440,6 +493,12 @@
           "title": "Move-out creates explicit proration adjustment and reverses later periods",
           "status": "Verified",
           "comment": "Move-out on 24 Nov added -Rs 6,000 to the November period only; older unpaid periods untouched."
+        },
+        {
+          "id": "5.11",
+          "title": "One-tap Full rent / electricity received (Cash or UPI, today) with 10-second Undo",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Rules deployed; checked live on TEST Tenant Two: Cash saved, Undo cancelled it (non-admin Undo covered by rules tests)."
         }
       ]
     },
@@ -561,6 +620,12 @@
           "title": "Rules + tests for categories, expenses and agreement history",
           "status": "Done",
           "comment": "5 new rules tests (59 total); 12 new unit tests (124 total)."
+        },
+        {
+          "id": "7.8",
+          "title": "Expense description optional",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Form, check and rule changed; unit + rules tests. Rules deployed 2026-11-23."
         }
       ]
     },
@@ -649,9 +714,27 @@
         },
         {
           "id": "9.4",
-          "title": "Phone push: daily 9:00 AM summary (FCM + scheduled function)",
-          "status": "Blocked",
-          "comment": "Built: device registration (Settings), service worker, scheduled 9 AM function (functions/). Needs Blaze (B3) and a web-push key (B11) to switch on."
+          "title": "Phone push and email: daily 9 AM summary (FCM + free Google Apps Script)",
+          "status": "In progress",
+          "comment": "Owner chose Google Apps Script instead of Blaze (2026-11-24). Live: project \"Property Manager reminders\" in the owner account, daily trigger 9-10 AM IST, sendTestToMe read live data and emailed the owner (2 rent reminders); owner confirmed the email arrived. Email works now; phone push still needs the web-push key (B11) and the published app (B12)."
+        },
+        {
+          "id": "9.5",
+          "title": "Dashboard This month / Year to date with per-building cards",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Calendar-year YTD; rent due/received/balance/overdue, electricity, expenses. 8 unit tests; checked live."
+        },
+        {
+          "id": "9.6",
+          "title": "Dashboard building filter, occupancy room board, collapsible rent by building/floor/flat",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. rentTree and multi-building filter unit-tested; checked live and at phone width."
+        },
+        {
+          "id": "9.7",
+          "title": "Dashboard building dropdown (one or more buildings) instead of a list",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Checked live."
         }
       ]
     },
@@ -764,6 +847,24 @@
           "title": "Family pilot: real data entered and checked by the family",
           "status": "Not started",
           "comment": "Owner activity (B5)."
+        },
+        {
+          "id": "11.7",
+          "title": "Mobile-friendly pass and Back buttons on inner pages",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. Stacked tables on phones (rent periods, monthly sheet, bills, reports, history); checked at 390 px."
+        },
+        {
+          "id": "11.8",
+          "title": "Whole-rupee amounts without ₹, no Reference/Notes fields, compact cards",
+          "status": "Done",
+          "comment": "Owner request 2026-11-23. formatINR display-only rounding (tests updated); Collections rent due now excludes periods reversed at move-out (test added)."
+        },
+        {
+          "id": "11.9",
+          "title": "Phone bottom menu hides while typing; expense actions after tapping a row",
+          "status": "Done",
+          "comment": "Owner request 2026-11-24. Checked at phone width."
         }
       ]
     }
@@ -893,11 +994,9 @@
       "id": "B3",
       "title": "Firebase Blaze plan (only for the daily phone push now)",
       "blocksPhases": [],
-      "blocksTasks": [
-        "9.4"
-      ],
-      "status": "Open",
-      "comment": "Files moved to Google Drive (2026-11-23), so Blaze is needed only for the 9 AM push."
+      "blocksTasks": [],
+      "status": "Resolved",
+      "comment": "Not needed: the daily reminders run from a free Google Apps Script instead (owner choice 2026-11-24). Blaze stays optional."
     },
     {
       "id": "B4",
@@ -971,7 +1070,7 @@
         "9.4"
       ],
       "status": "Open",
-      "comment": "After Blaze: Firebase console → Project settings → Cloud Messaging → Web Push certificates → Generate; put it in .env.local as VITE_FIREBASE_VAPID_KEY."
+      "comment": "Needed for phone push only (the email works without it): Firebase console → Project settings → Cloud Messaging → Web Push certificates → Generate key pair; put it in .env.local as VITE_FIREBASE_VAPID_KEY."
     },
     {
       "id": "B12",

@@ -104,7 +104,6 @@ export async function updateExpenseDetails(actor, expense, { categoryId, payment
     description: (description ?? expense.description).trim(),
     notes: (notes ?? expense.notes ?? '').trim(),
   }
-  if (!next.description) throw new Error('Describe the expense.')
   const batch = writeBatch(db)
   batch.update(doc(db, 'expenses', expense.id), { ...next, updatedBy: email(actor), updatedAt: serverTimestamp() })
   addAuditEntry(batch, actor, {

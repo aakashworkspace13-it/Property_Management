@@ -28,6 +28,12 @@ Dashboard · Buildings and flats · Collections · Expenses · Documents and rem
 
 Building → floor → flat hierarchy, search, readable text, large touch targets, plain language. The primary monthly workflow (Collections) must be fast: open Collections, review the tenant and rent period, mark full rent received or enter a partial amount, confirm the allocation, move to the next tenant. Optional fields (reference, method, notes, evidence) must not slow this down.
 
+**Simplicity (owner request 2026-11-23):** one tap does the job, no extra screens. On Collections, "Full rent received ₹X" has **Cash** and **UPI** buttons that save straight away with today's date (the same for electricity due); a different amount or date uses "Different amount or date". After a one-tap save an **Undo** shows for 10 seconds (only the person who saved it; kept in the ledger as voided). Every inner page has a **‹ Back** button (pages under "More" show it on phones). The app is laid out for phones: tables such as rent periods, the monthly sheet, bills, reports and change history turn into one card per row.
+
+**Amounts and fields (owner request 2026-11-23):** amounts are shown as whole rupees with Indian grouping and no ₹ sign (e.g. 12,000), rounded to the nearest rupee for display only; stored money stays exact paise. Excel uses the same whole-rupee format. The optional Reference and Notes fields are removed from all forms (payments, expenses, bills, flats, buildings, tenants, tenancies); notes already saved are kept but not shown. Cards are compact. Tapping a vacant flat on Buildings and flats offers **+ Add tenant**, which opens the full add-tenant form right there.
+
+**Less clutter (owner request 2026-11-24):** rarely used Edit buttons are hidden: tap the heading they belong to (building name, flat title, tenant "Details", agreement dates) to show Edit; on Expenses, tap a row to show Split / Edit / Void. Flats are added from one **+ Add flat** button on Buildings and flats (choose the building first). On phones the bottom menu hides while the keyboard is open.
+
 ## 4. Buildings and flats
 
 - Buildings (from the owner's property sheet, 2026-11-20; entered through the app, never committed as seed data). Each has a permanent short code; names are editable:
@@ -50,12 +56,16 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 - **Electricity connections:** one record per CA number with type (domestic/commercial), sub-meter yes/no and the meter holder's name, phone and email. Several flats can share one CA number (main meter + sub-meters). Holder phone numbers are masked in lists and kept out of the audit log.
 - **Import:** admins can import buildings, flats and connections from the property sheet saved as CSV (Settings → Import), with a preview, a problem list and editable building names before anything is saved. Flats that already exist are skipped, never changed.
 - Occupancy is **derived from tenancy dates**, not a separately editable flag. Renaming must not break history.
+- **Building view (owner request 2026-11-23):** each building is drawn as floors stacked top floor first, each floor split into its flats (green occupied, amber vacant, grey own use; amount due shown on the flat). Tapping a flat opens its details right under the building: status, CA number and type, and a **tenant timeline**: same-size cards, oldest to newest, each tenant's card holding all their details (stay, rent, mobile, members, agreement, balances) and "Empty" cards for gaps; it opens at the latest card and Earlier/Later (or a swipe) moves one card at a time.
+- Connection types are shown as **Dom** (domestic) and **Com** (commercial).
 
 ## 5. Tenants and tenancies
 
 - Tenant identity is separate from a tenancy (a tenant living in a flat for a date range).
 - A flat may have **only one overlapping active tenancy**.
 - Store: primary name, phones/contacts, household member names and optional phones, vehicles, move-in/out dates, monthly rent, agreement start/expiry, notes, ID proofs and agreements.
+- **Passport-size photo** (owner request 2026-11-23): taken with the phone's front camera or chosen from the gallery, cropped to 35 × 45 proportions and shrunk to about 10–20 KB, stored with the tenant in the app (not in Drive) and shown on the tenant page and the flat timeline. Any member can add or replace it.
+- **Owner requests 2026-11-24:** tapping a vacant flat opens its flat page with the add-tenant form; the rental agreement (dates and file) is optional and can be added later ("Add agreement" on the tenant page). An Aadhaar number must be exactly 12 digits (the box accepts digits only, up to 12; also checked by the database rules); other ID types keep their own format.
 - Old tenancies, documents, payments, expenses and debt are kept after departure.
 - **Never transfer an old tenancy's balance to a replacement tenant.**
 - **No security deposits and no scheduled rent increases in version 1.** [decided]
@@ -87,7 +97,7 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 
 ### 6.4 Expenses and profit
 
-- Expenses are building-wide or flat-specific: date, amount, category, building, optional flat/tenancy, payer type (owner-paid / tenant-paid), **payment mode** (cash, UPI, bank transfer, cheque, other — owner request 2026-11-20), description, notes, evidence (photo/PDF once Blaze is on).
+- Expenses are building-wide or flat-specific: date, amount, category, building, optional flat/tenancy, payer type (owner-paid / tenant-paid), **payment mode** (cash, UPI, bank transfer, cheque, other — owner request 2026-11-20), optional description (owner request 2026-11-23), evidence (photo/PDF once Blaze is on).
 - Amount, date, building, flat, payer and the stored split never change after saving; description, category, payment mode and notes can. Wrong expenses are voided by an admin (with a reason) and entered again.
 - Family-paid Tata Power bills are **not** also entered as expenses; reports count paid family bills as owner electricity payments (no double counting).
 - Initial editable categories: repairs, paint, bathroom fittings, submersible/borewell, maintenance, tax, other. Categories can be added, renamed and archived.
@@ -127,9 +137,10 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 - Agreement expiry: 30 and 7 days before.
 - Electricity: unpaid bill, timing configurable (initially one day after due).
 - Each reminder links to its record, appears once (no duplicates), and disappears when resolved.
-- Shown in-app on the Dashboard for all family members, plus **one daily phone push at 9:00 AM** (summary) once Blaze is on (owner choice 2026-11-21).
+- Shown in-app on the Dashboard for all family members, plus a **daily summary at about 9 AM**: a phone push (devices that turned it on) and an email to every active member. Sent by a free Google Apps Script in the owner's Google account, so the Blaze plan is not needed (owner choice 2026-11-24; see apps-script/README.md). Nothing is sent when nothing needs attention.
 - Reminder types: rent overdue and due within 3 days; agreement ending within 30 / 7 days or expired; tenant electricity due/overdue; unpaid Tata Power bills; own reminders (**title + date only**), any member can mark done.
-- Dashboard figures: rent this month (due/received), outstanding (rent + electricity), occupancy, expenses this month.
+- **Dashboard (owner request 2026-11-23):** a **This month / Year to date** switch (year to date = calendar year, 1 January to today). Totals: rent due, rent received, remaining balance, overdue rent (and how many tenants), electricity due/received, expenses (family and tenant paid). Below: the number of buildings and one card per building with its flats (occupied/vacant) and the same figures for that building; tapping a card opens that building on Buildings and flats.
+- **Dashboard update (owner request 2026-11-23, later):** one building dropdown (All buildings, or tick one or more buildings) changes every figure on the page. An occupancy board shows each building's floors with one small square per flat (green occupied, orange vacant, grey own use), like a hotel room board. **Rent by building** is a collapsible list Building → Floor → Flat with due, received and balance for the chosen period, summed at every level, children indented.
 
 ## 10. Reports and exports
 
@@ -143,7 +154,7 @@ Building → floor → flat hierarchy, search, readable text, large touch target
 
 Each must pass as an automated test of the money logic and as a manual check in the app:
 
-1. Full rent quick action saves exactly the remaining amount and Kolkata date, once, and shows the allocation.
+1. Full rent quick action (Cash / UPI) saves exactly the remaining amount and Kolkata date, once, with Undo for 10 seconds; the allocation shows in the ledger.
 2. Partial payment leaves the correct remainder on its original period.
 3. Several missed periods: a later payment pays oldest first; manual reallocation is explicit; credit is visible.
 4. A 31st anniversary passes through February and back to the 31st with no gaps/overlaps, including leap years.

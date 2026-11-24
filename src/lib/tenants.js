@@ -85,7 +85,7 @@ export function validateTenant(input) {
   if (!ID_TYPES.some((t) => t.value === value.idType)) errors.idType = 'Choose the ID proof type.'
   if (!value.idNumber) errors.idNumber = 'Enter the ID number.'
   else if (value.idType === 'aadhaar' && !/^\d{4} ?\d{4} ?\d{4}$/.test(value.idNumber)) {
-    errors.idNumber = 'Aadhaar number must have 12 digits.'
+    errors.idNumber = 'Aadhaar number must be exactly 12 digits.'
   } else if (value.idType === 'pan' && !/^[A-Z]{5}\d{4}[A-Z]$/.test(value.idNumber)) {
     errors.idNumber = 'PAN must look like ABCDE1234F.'
   } else if (value.idNumber.length > 30) errors.idNumber = 'ID number is too long.'

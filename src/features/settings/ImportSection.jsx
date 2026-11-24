@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/auth-context.js'
-import { maskPhone, planImport } from '../../lib/property.js'
+import { maskPhone, planImport, connectionTypeLabel } from '../../lib/property.js'
 import { existingCodes, runImport } from '../../services/property.js'
 
 // Admin-only import of buildings, flats and electricity connections from the family's
@@ -193,7 +193,7 @@ export default function ImportSection() {
               {plan.connections.map((c) => (
                 <tr key={c.caNumber}>
                   <td>{c.caNumber}</td>
-                  <td>{c.type === 'commercial' ? 'Commercial' : 'Domestic'}</td>
+                  <td>{connectionTypeLabel(c.type)}</td>
                   <td>{c.submeter ? 'Yes' : 'No'}</td>
                   <td>{c.flatCodes.join(', ')}</td>
                   <td>

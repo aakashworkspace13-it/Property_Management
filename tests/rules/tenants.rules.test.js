@@ -88,9 +88,37 @@ describe('tenants', () => {
     await assertFails(setDoc(doc(db, 'tenants/t1'), tenant({ mobile: '12345' })))
     await assertFails(setDoc(doc(db, 'tenants/t1'), tenant({ members: 0 })))
     await assertFails(setDoc(doc(db, 'tenants/t1'), tenant({ idType: 'library-card' })))
+    await assertFails(setDoc(doc(db, 'tenants/t1'), tenant({ idNumber: '12345678901' }))) // Aadhaar must be 12 digits
+    await assertFails(setDoc(doc(db, 'tenants/t1'), tenant({ idNumber: '1234567890123' })))
+    await assertSucceeds(setDoc(doc(db, 'tenants/t9'), tenant({ idType: 'pan', idNumber: 'ABCDE1234F' })))
     await assertFails(setDoc(doc(db, 'tenants/t1'), tenant({ deposit: 5000 })))
     await assertSucceeds(setDoc(doc(db, 'tenants/t1'), tenant()))
     await assertFails(deleteDoc(doc(db, 'tenants/t1')))
+  })
+})
+
+describe('tenant photos', () => {
+  const photo = (user = FAMILY, extra = {}) => ({ photo: 'data:image/jpeg;base64,AAAA', ...updated(user), ...extra })
+
+  it('members add and replace a small JPEG photo of an existing tenant; outsiders cannot', async () => {
+    const db = ctxFor(FAMILY).firestore()
+    await assertFails(setDoc(doc(db, 'tenantPhotos/t1'), photo())) // no such tenant yet
+    await assertSucceeds(setDoc(doc(db, 'tenants/t1'), tenant()))
+    await assertSucceeds(setDoc(doc(db, 'tenantPhotos/t1'), photo()))
+    await assertSucceeds(setDoc(doc(ctxFor(ADMIN).firestore(), 'tenantPhotos/t1'), photo(ADMIN, { photo: 'data:image/jpeg;base64,BBBB' })))
+    await assertFails(getDoc(doc(ctxFor(STRANGER).firestore(), 'tenantPhotos/t1')))
+    await assertFails(setDoc(doc(ctxFor(STRANGER).firestore(), 'tenantPhotos/t1'), photo(STRANGER)))
+    await assertFails(deleteDoc(doc(db, 'tenantPhotos/t1')))
+  })
+
+  it('rejects other formats, large photos, extra fields and wrong stamps', async () => {
+    const db = ctxFor(FAMILY).firestore()
+    await assertSucceeds(setDoc(doc(db, 'tenants/t1'), tenant()))
+    await assertFails(setDoc(doc(db, 'tenantPhotos/t1'), photo(FAMILY, { photo: 'data:image/png;base64,AAAA' })))
+    await assertFails(setDoc(doc(db, 'tenantPhotos/t1'), photo(FAMILY, { photo: 'https://example.invalid/p.jpg' })))
+    await assertFails(setDoc(doc(db, 'tenantPhotos/t1'), photo(FAMILY, { photo: `data:image/jpeg;base64,${'A'.repeat(100_000)}` })))
+    await assertFails(setDoc(doc(db, 'tenantPhotos/t1'), photo(FAMILY, { note: 'x' })))
+    await assertFails(setDoc(doc(db, 'tenantPhotos/t1'), photo(ADMIN)))
   })
 })
 

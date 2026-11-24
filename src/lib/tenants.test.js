@@ -46,6 +46,8 @@ describe('validateTenant', () => {
   })
   it('checks Aadhaar and PAN formats', () => {
     expect(validateTenant({ ...goodTenant, idNumber: '1234' }).errors.idNumber).toMatch(/12 digits/)
+    expect(validateTenant({ ...goodTenant, idNumber: '1234567890123' }).errors.idNumber).toMatch(/exactly 12 digits/)
+    expect(validateTenant({ ...goodTenant, idNumber: '12345678901' }).errors.idNumber).toMatch(/exactly 12 digits/)
     expect(validateTenant({ ...goodTenant, idType: 'pan', idNumber: 'abcde1234f' }).errors).toEqual({})
     expect(validateTenant({ ...goodTenant, idType: 'pan', idNumber: 'ABC' }).errors.idNumber).toMatch(/ABCDE1234F/)
   })

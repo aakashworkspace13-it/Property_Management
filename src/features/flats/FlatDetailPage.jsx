@@ -1,14 +1,16 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
+import AddTenantForm from '../tenants/AddTenantForm.jsx'
 import Field from '../../components/Field.jsx'
 import { useAuth } from '../auth/auth-context.js'
 import { departurePreview, formatINR, todayInKolkata } from '../../lib/money/index.js'
-import { flatReference, maskPhone, occupancy } from '../../lib/property.js'
+import { flatReference, maskPhone, occupancy, connectionTypeLabel } from '../../lib/property.js'
 import { agreementStatus } from '../../lib/tenants.js'
 import { recordMoveOut } from '../../services/tenants.js'
 import { activeTenancy, useTenancyData } from '../tenants/useTenancyData.js'
 import { usePropertyData } from './usePropertyData.js'
 import { useCollectionData } from '../collections/useCollectionData.js'
+import BackButton from '../../components/BackButton.jsx'
 
 function MoveOut({ tenancy, tenantName, charges, actor, onDone }) {
   const [date, setDate] = useState(todayInKolkata())
@@ -89,6 +91,7 @@ function MoveOut({ tenancy, tenantName, charges, actor, onDone }) {
 
 export default function FlatDetailPage() {
   const { code } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { buildings, flats, connections, loading } = usePropertyData()
   const { tenants, tenancies, loading: tLoading, error } = useTenancyData()
@@ -109,29 +112,25 @@ export default function FlatDetailPage() {
 
   return (
     <section className="page narrow">
-      <p className="muted small">
-        <Link to="/flats">← Buildings and flats</Link>
-      </p>
+      <BackButton fallback="/flats" />
       <h1>{flatReference(building, flat)}</h1>
       <p className="muted">
         {flat.code}
         {connection &&
-          ` · ${connection.caNumber} · ${connection.type === 'commercial' ? 'Commercial' : 'Domestic'}${connection.submeter ? ' · sub-meter' : ''}`}
+          ` · ${connection.caNumber} · ${connectionTypeLabel(connection.type)}${connection.submeter ? ' · sub-meter' : ''}`}
         {connection?.holderName && ` · meter in the name of ${connection.holderName}`}
         {connection?.holderPhone && ` (${maskPhone(connection.holderPhone)})`}
       </p>
 
       <section className="card section">
-        <h2>Current tenant</h2>
+        <h2>{status === 'vacant' ? 'Add tenant' : 'Current tenant'}</h2>
         {status === 'own-use' && <p className="muted">Own use: this flat is not rented.</p>}
         {status === 'vacant' && (
           <>
-            <p>
-              <span className="pill warn">Vacant</span>
+            <p className="muted small">
+              <span className="pill warn">Vacant</span> Fill in the new tenant below. Fields marked * are required; the agreement can be added later.
             </p>
-            <Link className="button primary" to={`/flats/${flat.code}/add-tenant`}>
-              Add tenant
-            </Link>
+            <AddTenantForm flat={flat} onCancel={() => navigate(-1)} />
           </>
         )}
         {current && (

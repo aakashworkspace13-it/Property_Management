@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { flatCode } from '../../lib/property.js'
+import { flatCode, connectionTypeLabel } from '../../lib/property.js'
 
 const FLOOR_SUGGESTIONS = ['Ground', '1st', '2nd', '3rd', '4th', '5th', 'Basement']
 const POSITION_SUGGESTIONS = ['Front', 'Back', 'Left', 'Right', 'Single', '1', '2']
@@ -75,10 +75,6 @@ export function BuildingForm({ initial, onSave, onCancel }) {
         <input type="checkbox" checked={values.ownUse} onChange={set('ownUse')} />
         Own use (not rented to tenants)
       </label>
-      <label>
-        Notes (optional)
-        <textarea maxLength={1000} rows={2} value={values.notes} onChange={set('notes')} />
-      </label>
       <Actions busy={busy} onCancel={onCancel} label={editing ? 'Save' : 'Add building'} />
       {error && <p className="error">{error}</p>}
     </form>
@@ -93,7 +89,7 @@ function ConnectionSelect({ connections, value, onChange }) {
         .sort((a, b) => a.caNumber.localeCompare(b.caNumber))
         .map((c) => (
           <option key={c.caNumber} value={c.caNumber}>
-            {c.caNumber} · {c.type === 'commercial' ? 'Commercial' : 'Domestic'}
+            {c.caNumber} · {connectionTypeLabel(c.type)}
             {c.submeter ? ' · sub-meter' : ''}
           </option>
         ))}
@@ -167,10 +163,6 @@ export function FlatForm({ building, flat, flats, connections, onSave, onCancel 
       <label className="check">
         <input type="checkbox" checked={values.ownUse} onChange={set('ownUse')} />
         Own use (not rented to tenants)
-      </label>
-      <label>
-        Notes (optional)
-        <textarea maxLength={1000} rows={2} value={values.notes} onChange={set('notes')} />
       </label>
       <Actions busy={busy || Boolean(preview?.taken)} onCancel={onCancel} label={editing ? 'Save' : 'Add flat'} />
       {error && <p className="error">{error}</p>}

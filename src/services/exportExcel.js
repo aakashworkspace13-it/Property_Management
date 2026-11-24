@@ -3,7 +3,7 @@
 
 import writeExcelFile from 'write-excel-file/browser'
 
-const MONEY_FORMAT = '#,##0.00'
+const MONEY_FORMAT = '#,##,##0' // whole rupees, Indian grouping (owner choice 2026-11-23)
 
 function cell(value, type) {
   if (value === null || value === undefined || value === '') return null

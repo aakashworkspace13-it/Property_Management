@@ -14,10 +14,9 @@ function periodLabel(charge) {
 
 /**
  * Records a rent payment for one tenancy with a preview of where the money goes.
- * quick = true: "full rent received" — amount fixed to the displayed period's remaining amount.
  * charges / payments: this tenancy's rent charges and payments (for the preview).
  */
-export default function PaymentForm({ tenancy, account = 'rent', charges, payments, displayedCharge, defaultAmount, quick = false, onDone }) {
+export default function PaymentForm({ tenancy, account = 'rent', charges, payments, displayedCharge, defaultAmount, onDone }) {
   const { user } = useAuth()
   const [paymentId] = useState(() => newPaymentId()) // fixed for every retry of this payment
   const [values, setValues] = useState({
@@ -76,39 +75,25 @@ export default function PaymentForm({ tenancy, account = 'rent', charges, paymen
   return (
     <form className="form panel-form" onSubmit={save} noValidate>
       <h3>
-        {account === 'electricity'
-          ? 'Electricity payment received'
-          : quick
-            ? 'Confirm full rent received'
-            : 'Record a rent payment'}
+        {account === 'electricity' ? 'Electricity payment received' : 'Record a rent payment'}
       </h3>
       <div className="form-row">
-        <Field label="Amount (₹)" required error={amountError}>
-          <input inputMode="decimal" {...bind('amount')} readOnly={quick} />
+        <Field label="Amount" required error={amountError}>
+          <input inputMode="decimal" {...bind('amount')} />
         </Field>
         <Field label="Date received" required>
           <input type="date" {...bind('date')} />
         </Field>
       </div>
-      <div className="form-row">
-        <Field label="Method">
-          <select {...bind('method')}>
-            {PAYMENT_METHODS.map((m) => (
-              <option key={m.value} value={m.value}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Reference (optional)" hint="UPI ref, cheque no., etc.">
-          <input maxLength={100} {...bind('reference')} />
-        </Field>
-      </div>
-      {!quick && (
-        <Field label="Notes (optional)">
-          <input maxLength={500} {...bind('notes')} />
-        </Field>
-      )}
+      <Field label="Method">
+        <select {...bind('method')}>
+          {PAYMENT_METHODS.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+      </Field>
 
       {preview && (
         <div className={preview.paysOlderFirst ? 'notice small' : 'notice small calm'}>

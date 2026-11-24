@@ -9,6 +9,7 @@ import { useElectricityData } from '../electricity/useElectricityData.js'
 import { useExpenseData } from '../expenses/useExpenseData.js'
 import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from '../tenants/useTenancyData.js'
+import BackButton from '../../components/BackButton.jsx'
 
 function show(value, type) {
   if (value === null || value === undefined || value === '') return ''
@@ -24,7 +25,7 @@ function ReportTable({ table }) {
         <p className="muted">Nothing to show.</p>
       ) : (
         <div className="table-wrap">
-          <table className="table">
+          <table className="table stack">
             <thead>
               <tr>
                 {table.columns.map((c) => (
@@ -38,7 +39,7 @@ function ReportTable({ table }) {
               {table.rows.map((r, i) => (
                 <tr key={i}>
                   {table.columns.map((c) => (
-                    <td key={c.key} className={c.type === 'money' || c.type === 'number' ? 'num' : ''}>
+                    <td key={c.key} data-label={c.label} className={c.type === 'money' || c.type === 'number' ? 'num' : ''}>
                       {show(r[c.key], c.type)}
                     </td>
                   ))}
@@ -48,9 +49,9 @@ function ReportTable({ table }) {
             {table.totals && (
               <tfoot>
                 <tr>
-                  {table.columns.map((c) => (
-                    <td key={c.key} className={c.type === 'money' || c.type === 'number' ? 'num' : ''}>
-                      <strong>{show(table.totals[c.key], c.type)}</strong>
+                  {table.columns.map((c, i) => (
+                    <td key={c.key} data-label={i === 0 ? '' : c.label} className={c.type === 'money' || c.type === 'number' ? 'num' : ''}>
+                      {show(table.totals[c.key], c.type) !== '' && <strong>{show(table.totals[c.key], c.type)}</strong>}
                     </td>
                   ))}
                 </tr>
@@ -106,6 +107,7 @@ export default function ReportsPage() {
 
   return (
     <section className="page report-page">
+      <BackButton fallback="/more" mobileOnly />
       <div className="page-header no-print">
         <h1>Reports</h1>
         <div className="form-actions">

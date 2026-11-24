@@ -3,14 +3,14 @@ import { useAuth } from '../auth/auth-context.js'
 import { disablePush, enablePush, pushStatus } from '../../services/push.js'
 
 const TEXT = {
-  'not-configured': 'Not available yet. Phone notifications start after the Blaze plan and the web-push key are set up.',
+  'not-configured': 'Not available yet: the web-push key still needs to be added. The daily reminder email works already.',
   unsupported: 'This browser cannot show notifications. On iPhone, add the app to the Home Screen first.',
   blocked: 'Notifications are blocked for this site in the browser settings.',
-  on: 'On for this device. A summary of reminders arrives every day at 9:00 AM.',
+  on: 'On for this device. A summary of reminders arrives every morning around 9 AM.',
   off: 'Off for this device.',
 }
 
-// Daily 9 AM reminder summary on this phone or computer.
+// Daily 9 AM reminder summary on this phone or computer (sent by the Google Apps Script in apps-script/).
 export default function PushSection() {
   const { user } = useAuth()
   const [status, setStatus] = useState(null)

@@ -73,7 +73,8 @@ describe('expenses', () => {
     await assertFails(setDoc(doc(d, 'expenses/e3'), expense({ amount: 0 })))
     await assertFails(setDoc(doc(d, 'expenses/e3'), expense({ payer: 'bank' })))
     await assertFails(setDoc(doc(d, 'expenses/e3'), expense({ paymentMode: 'gold' })))
-    await assertFails(setDoc(doc(d, 'expenses/e3'), expense({ description: '' })))
+    await assertSucceeds(setDoc(doc(d, 'expenses/e3'), expense({ description: '' }))) // optional
+    await assertFails(setDoc(doc(d, 'expenses/e4'), expense({ description: 'x'.repeat(201) })))
     await assertFails(setDoc(doc(d, 'expenses/e3'), expense({ categoryId: 'old' }))) // archived
     await assertFails(setDoc(doc(d, 'expenses/e3'), expense({ shares: {} })))
     // a flat expense must be for a flat of that building, and only that flat gets a share

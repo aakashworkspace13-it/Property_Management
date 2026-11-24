@@ -35,7 +35,7 @@ describe('computeReminders', () => {
     expect(ids).toContain('rent-overdue-ty1') // Oct and Nov periods unpaid
     expect(ids).toContain('rent-soon-ty2-2026-11-22') // next period in 2 days
     expect(r.find((x) => x.id === 'agr-ty1')).toMatchObject({ level: 'soon', title: 'Agreement ends within 7 days' })
-    expect(r.find((x) => x.id === 'rent-overdue-ty1').title).toBe('Rent overdue: ₹20,000.00')
+    expect(r.find((x) => x.id === 'rent-overdue-ty1').title).toBe('Rent overdue: 20,000')
     expect(r[0].level).toBe('overdue')
   })
 
@@ -52,7 +52,7 @@ describe('computeReminders', () => {
     const d = data({ bills, ownReminders })
     d.charges.push(elec)
     const r = computeReminders(d, today)
-    expect(r.find((x) => x.kind === 'electricity')).toMatchObject({ level: 'soon', title: 'Electricity due: ₹240.00' })
+    expect(r.find((x) => x.kind === 'electricity')).toMatchObject({ level: 'soon', title: 'Electricity due: 240' })
     expect(r.find((x) => x.id === 'bill-b1')).toMatchObject({ level: 'overdue' })
     expect(r.some((x) => x.id === 'bill-b2')).toBe(false)
     expect(r.find((x) => x.id === 'own-o1')).toMatchObject({ level: 'soon', title: 'Water tank cleaning' })

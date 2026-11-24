@@ -89,7 +89,7 @@ export default function BillForm({ connection, flats, buildings, tenants, readin
         </Field>
       </div>
       <div className="form-row three">
-        <Field label="Bill amount (₹)" required error={errors.amount}>
+        <Field label="Bill amount" required error={errors.amount}>
           <input inputMode="decimal" {...bindBill('amount')} />
         </Field>
         <Field label="Due date" required error={errors.dueDate}>
@@ -121,7 +121,7 @@ export default function BillForm({ connection, flats, buildings, tenants, readin
           <legend>Sub-meter readings on {bill.periodEnd || 'the period end date'}</legend>
           {errors.rate && <p className="error small">{errors.rate}</p>}
           <p className="muted small">
-            Rate: {rate ? `₹${rate} per unit` : 'not set'} · Each tenant&apos;s charge is due on the bill&apos;s due date.
+            Rate: {rate ? `${rate} per unit` : 'not set'} · Each tenant&apos;s charge is due on the bill&apos;s due date.
           </p>
           {flats.map((f) => {
             const e = entries[f.code]
@@ -184,9 +184,6 @@ export default function BillForm({ connection, flats, buildings, tenants, readin
         <p className="notice small calm">The tenant pays this bill to Tata Power directly. It is tracked here only, never counted as family income.</p>
       )}
 
-      <Field label="Notes (optional)">
-        <input maxLength={500} {...bindBill('notes')} />
-      </Field>
       <div className="form-actions">
         <button type="submit" className="button primary" disabled={busy}>
           {busy ? 'Saving…' : 'Save bill'}

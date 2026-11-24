@@ -119,6 +119,25 @@ describe('payments', () => {
     await assertFails(deleteDoc(doc(db(ADMIN), 'payments/p1')))
   })
 
+  it('the person who saved a payment can undo it within 2 minutes; nobody else, and not later', async () => {
+    const undo = (user, reason = 'Undone right after saving') => ({ deleted: true, deletedBy: user.email, deletedAt: serverTimestamp(), deleteReason: reason })
+    await seedPayment() // saved by FAMILY just now
+    await assertFails(updateDoc(doc(db(FAMILY), 'payments/p1'), undo(FAMILY, 'Changed my mind')))
+    await assertFails(updateDoc(doc(db(FAMILY), 'payments/p1'), { ...undo(FAMILY), amount: 1 }))
+    await assertSucceeds(updateDoc(doc(db(FAMILY), 'payments/p1'), undo(FAMILY)))
+    await assertFails(updateDoc(doc(db(FAMILY), 'payments/p1'), { deleted: false, deletedBy: FAMILY.email, deletedAt: serverTimestamp(), deleteReason: 'Undone right after saving' }))
+
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'payments/p2'), { ...payment(), createdAt: new Date(Date.now() - 5 * 60 * 1000) })
+    })
+    await assertFails(updateDoc(doc(db(FAMILY), 'payments/p2'), undo(FAMILY))) // too late
+
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'payments/p3'), { ...payment(created(ADMIN)), createdAt: new Date() })
+    })
+    await assertFails(updateDoc(doc(db(FAMILY), 'payments/p3'), undo(FAMILY))) // saved by someone else
+  })
+
   it('members can reallocate a payment with a reason', async () => {
     await seedPayment()
     const realloc = (extra = {}) => ({

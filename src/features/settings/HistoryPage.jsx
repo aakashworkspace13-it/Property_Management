@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore'
 import { db } from '../../services/firebase.js'
 import { useAuth } from '../auth/auth-context.js'
+import BackButton from '../../components/BackButton.jsx'
 
 const ENTITIES = ['member', 'building', 'flat', 'connection', 'tenant', 'tenancy', 'charge', 'payment', 'document', 'bill', 'reading', 'expense', 'category', 'reminder', 'settings']
 
@@ -39,9 +39,7 @@ export default function HistoryPage() {
 
   return (
     <section className="page">
-      <p className="muted small">
-        <Link to="/settings">← Settings</Link>
-      </p>
+      <BackButton fallback="/settings" />
       <h1>Change history</h1>
       <div className="toolbar">
         <label className="field">
@@ -66,7 +64,7 @@ export default function HistoryPage() {
       </div>
       <p className="muted small">Latest {entries.length} changes; {shown.length} shown. Phone and ID numbers are never stored here.</p>
       <div className="table-wrap card">
-        <table className="table">
+        <table className="table stack">
           <thead>
             <tr>
               <th>When (IST)</th>
@@ -79,13 +77,13 @@ export default function HistoryPage() {
           <tbody>
             {shown.map((e) => (
               <tr key={e.id}>
-                <td className="nowrap">{dateOf(e)}</td>
-                <td>{e.actorEmail}</td>
-                <td>{e.action}</td>
-                <td>
+                <td className="nowrap" data-label="When">{dateOf(e)}</td>
+                <td data-label="Who">{e.actorEmail}</td>
+                <td data-label="Action">{e.action}</td>
+                <td data-label="Record">
                   {e.entity} <span className="muted small">{e.entityId}</span>
                 </td>
-                <td className="small">
+                <td className="small" data-label="Changed">
                   {(e.changedFields ?? []).map((k) => (
                     <div key={k}>
                       {k}: {e.before ? `${value(e.before[k])} → ` : ''}

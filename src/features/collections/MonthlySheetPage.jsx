@@ -9,6 +9,7 @@ import { usePropertyData } from '../flats/usePropertyData.js'
 import { useTenancyData } from '../tenants/useTenancyData.js'
 import { useCollectionData } from './useCollectionData.js'
 import { useEnsureDueCharges } from './useEnsureDueCharges.js'
+import BackButton from '../../components/BackButton.jsx'
 
 const RENT_STATUS = {
   paid: { label: 'Paid', className: 'pill' },
@@ -50,9 +51,7 @@ export default function MonthlySheetPage() {
 
   return (
     <section className="page">
-      <p className="muted small">
-        <Link to="/collections">← Collections</Link>
-      </p>
+      <BackButton fallback="/collections" />
       <div className="page-header">
         <h1>Monthly sheet · {monthName}</h1>
         <input type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} aria-label="Month" />
@@ -82,7 +81,7 @@ export default function MonthlySheetPage() {
         <p className="muted">No tenants lived in a flat during this month.</p>
       ) : (
         <div className="table-wrap card">
-          <table className="table sheet">
+          <table className="table sheet stack">
             <thead>
               <tr>
                 <th rowSpan={2}>Flat / tenant</th>
@@ -105,14 +104,14 @@ export default function MonthlySheetPage() {
                 const e = r.electricity
                 return (
                   <tr key={r.tenancy.id}>
-                    <td>
+                    <td data-label="Tenant">
                       <Link to={`/tenancies/${r.tenancy.id}`}>{r.tenant?.name ?? 'Tenant'}</Link>
                       <div className="muted small">{r.flat ? flatReference(building, r.flat) : r.tenancy.flatId}</div>
                     </td>
-                    <td>
+                    <td data-label="Rent paid?">
                       <Status map={RENT_STATUS} value={r.rent.status} />
                     </td>
-                    <td>
+                    <td data-label="Rent amount">
                       {r.rent.due > 0 ? (
                         <>
                           {formatINR(r.rent.paid)}
@@ -122,13 +121,13 @@ export default function MonthlySheetPage() {
                         '—'
                       )}
                     </td>
-                    <td>{r.rent.dates.join(', ') || '—'}</td>
-                    <td>{r.rent.methods.map(methodLabel).join(', ') || '—'}</td>
-                    <td>
+                    <td data-label="Rent date">{r.rent.dates.join(', ') || '—'}</td>
+                    <td data-label="Mode">{r.rent.methods.map(methodLabel).join(', ') || '—'}</td>
+                    <td data-label="Electricity paid?">
                       <Status map={ELEC_STATUS} value={e.status} />
                       {e.kind === 'own' && <div className="muted small">tenant pays Tata</div>}
                     </td>
-                    <td>
+                    <td data-label="Electricity amount">
                       {e.due > 0 ? (
                         <>
                           {formatINR(e.paid)}
@@ -138,7 +137,7 @@ export default function MonthlySheetPage() {
                         '—'
                       )}
                     </td>
-                    <td>{e.dates.join(', ') || '—'}</td>
+                    <td data-label="Electricity date">{e.dates.join(', ') || '—'}</td>
                   </tr>
                 )
               })}

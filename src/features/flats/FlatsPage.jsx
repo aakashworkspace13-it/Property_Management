@@ -1,12 +1,16 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
+import TapToEdit from '../../components/TapToEdit.jsx'
 import { useAuth } from '../auth/auth-context.js'
-import { todayInKolkata } from '../../lib/money/index.js'
-import { floorOrder, occupancy, sortFlats } from '../../lib/property.js'
+import { formatINR, todayInKolkata } from '../../lib/money/index.js'
+import { collectionRow } from '../../lib/collections.js'
+import { connectionTypeLabel, floorLabel, floorOrder, flatReference, occupancy, sortFlats } from '../../lib/property.js'
 import { createBuilding, createFlat, updateBuilding, updateFlat } from '../../services/property.js'
+import { useCollectionData } from '../collections/useCollectionData.js'
+import { activeTenancy, useTenancyData } from '../tenants/useTenancyData.js'
 import { usePropertyData } from './usePropertyData.js'
-import { useTenancyData } from '../tenants/useTenancyData.js'
 import { BuildingForm, FlatForm } from './forms.jsx'
+import FlatTimeline from './FlatTimeline.jsx'
 
 const STATUS = {
   vacant: { label: 'Vacant', className: 'pill warn' },
@@ -24,132 +28,202 @@ function matches(query, ...values) {
   return values.some((v) => String(v ?? '').toLowerCase().includes(query))
 }
 
-function FlatRow({ flat, connection, status, tenantName, isAdmin, onEdit }) {
-  const s = STATUS[status]
+/** One flat box inside a floor of the building drawing. */
+function FlatBox({ flat, status, tenantName, balance, selected, dim, onSelect }) {
+  const due = (balance?.outstanding ?? 0) + (balance?.electricityOutstanding ?? 0)
   return (
-    <li className="flat-row">
-      <div className="flat-main">
-        <div>
-          <Link to={`/flats/${flat.code}`} className="flat-link">
-            <strong>{flat.position}</strong>
-            {flat.friendlyName && <span className="muted"> — {flat.friendlyName}</span>}
-          </Link>
-          <span className={s.className}>{s.label}</span>
-          {tenantName && <span className="small"> {tenantName}</span>}
-        </div>
-        <div className="muted small">
-          {flat.code}
-          {connection && (
-            <>
-              {' · '}{caLabel(connection.caNumber)} · {connection.type === 'commercial' ? 'Commercial' : 'Domestic'}
-              {connection.submeter && ' · sub-meter'}
-            </>
-          )}
-          {!connection && flat.connectionId && ` · ${caLabel(flat.connectionId)}`}
-        </div>
-      </div>
-      {isAdmin && (
-        <button type="button" className="button small-button" onClick={onEdit}>
-          Edit
-        </button>
-      )}
-    </li>
+    <button
+      type="button"
+      className={`flat-box ${status}${selected ? ' selected' : ''}${dim ? ' dim' : ''}`}
+      onClick={onSelect}
+      aria-pressed={selected}
+    >
+      <span className="flat-box-position">{flat.position}</span>
+      <span className="flat-box-name">{status === 'occupied' ? tenantName ?? 'Tenant' : STATUS[status].label}</span>
+      {due > 0 && <span className="flat-box-due">{formatINR(due)} due</span>}
+    </button>
   )
 }
 
-function BuildingCard({ building, flats, connections, tenancies, tenantNames, isAdmin, today, query, editing, setEditing, actor }) {
-  const byCa = new Map(connections.map((c) => [c.caNumber, c]))
-  const visible = flats.filter((f) =>
-    matches(query, building.name, building.code, f.code, f.floor, f.position, f.friendlyName, f.connectionId, tenantNames.get(f.code)),
-  )
-  if (query && visible.length === 0 && !matches(query, building.name, building.code)) return null
+/** Details of the tapped flat, shown right under its building. */
+function FlatPanel({ building, flat, connection, tenancies, tenants, balances, today, isAdmin, editing, setEditing, flats, connections, actor }) {
+  const status = occupancy(flat, tenancies, today)
 
-  const floors = new Map()
-  for (const f of visible) {
-    if (!floors.has(f.floor)) floors.set(f.floor, [])
-    floors.get(f.floor).push(f)
-  }
-  const floorList = [...floors.entries()].sort((a, b) => floorOrder(a[0]) - floorOrder(b[0]))
-  const statuses = flats.map((f) => occupancy(f, tenancies, today))
-  const counts = {
-    total: flats.length,
-    vacant: statuses.filter((s) => s === 'vacant').length,
-    ownUse: statuses.filter((s) => s === 'own-use').length,
+  if (editing?.type === 'flat' && editing.id === flat.code) {
+    return (
+      <div className="flat-panel">
+        <FlatForm building={building} flat={flat} flats={flats} connections={connections} onSave={(v) => updateFlat(actor, flat, v)} onCancel={() => setEditing(null)} />
+      </div>
+    )
   }
 
   return (
-    <section className="card building-card">
+    <div className="flat-panel">
+      <div className="flat-panel-head">
+        <div>
+          {isAdmin ? (
+            <TapToEdit as="h3" label="Edit flat" onEdit={() => setEditing({ type: 'flat', id: flat.code })}>
+              {flatReference(building, flat)} <span className={STATUS[status].className}>{STATUS[status].label}</span>
+            </TapToEdit>
+          ) : (
+            <h3>
+              {flatReference(building, flat)} <span className={STATUS[status].className}>{STATUS[status].label}</span>
+            </h3>
+          )}
+          <div className="muted small">
+            {flat.code}
+            {connection && ` · ${caLabel(connection.caNumber)} · ${connectionTypeLabel(connection.type)}${connection.submeter ? ' · sub-meter' : ''}`}
+            {!connection && flat.connectionId && ` · ${caLabel(flat.connectionId)}`}
+          </div>
+        </div>
+        <div className="inline-actions">
+          <Link className="button small-button" to={`/flats/${flat.code}`}>
+            Flat page
+          </Link>
+        </div>
+      </div>
+
+      <h4 className="timeline-title">Tenant timeline</h4>
+      <FlatTimeline key={flat.code} flat={flat} tenancies={tenancies} tenants={tenants} balances={balances} today={today} />
+    </div>
+  )
+}
+
+/** The one place to add a flat: choose the building, then fill in the flat. */
+function AddFlatAnywhere({ buildings, connections, actor, onDone }) {
+  const [code, setCode] = useState('')
+  const chosen = buildings.find((g) => g.building.code === code)
+  return (
+    <div className="card section">
+      <label className="field">
+        <span className="field-label">Building</span>
+        <select value={code} onChange={(e) => setCode(e.target.value)}>
+          <option value="">Choose a building…</option>
+          {buildings.map(({ building }) => (
+            <option key={building.code} value={building.code}>
+              {building.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {chosen ? (
+        <FlatForm
+          key={code}
+          building={chosen.building}
+          flats={chosen.flats}
+          connections={connections}
+          onSave={(v) => createFlat(actor, { ...v, buildingId: chosen.building.code })}
+          onCancel={onDone}
+        />
+      ) : (
+        <button type="button" className="button" onClick={onDone}>
+          Cancel
+        </button>
+      )}
+    </div>
+  )
+}
+
+function BuildingCard(props) {
+  const navigate = useNavigate()
+  const { building, flats, connections, tenancies, tenants, tenantNames, balances, isAdmin, today, query, editing, setEditing, actor, selected, setSelected } = props
+  const byCa = new Map(connections.map((c) => [c.caNumber, c]))
+  const flatMatches = (f) =>
+    matches(query, building.name, building.code, f.code, f.floor, f.position, f.friendlyName, f.connectionId, tenantNames.get(f.code))
+  if (query && !flats.some(flatMatches) && !matches(query, building.name, building.code)) return null
+
+  const floors = new Map()
+  for (const f of flats) {
+    if (!floors.has(f.floor)) floors.set(f.floor, [])
+    floors.get(f.floor).push(f)
+  }
+  // Top floor at the top, like the real building.
+  const floorList = [...floors.entries()].sort((a, b) => floorOrder(b[0]) - floorOrder(a[0]))
+  const statuses = flats.map((f) => occupancy(f, tenancies, today))
+  const counts = {
+    total: flats.length,
+    occupied: statuses.filter((s) => s === 'occupied').length,
+    vacant: statuses.filter((s) => s === 'vacant').length,
+    ownUse: statuses.filter((s) => s === 'own-use').length,
+  }
+  const selectedFlat = flats.find((f) => f.code === selected)
+
+  return (
+    <section className="card building-card" id={`b-${building.code}`}>
       <header className="building-header">
         <div>
-          <h2>
-            {building.name} <span className="muted small">{building.code}</span>
-            {building.ownUse && <span className="pill muted-pill">Own use</span>}
-          </h2>
+          {isAdmin ? (
+            <TapToEdit as="h2" label="Edit building" onEdit={() => setEditing({ type: 'building', id: building.code })}>
+              {building.name} <span className="muted small">{building.code}</span>
+              {building.ownUse && <span className="pill muted-pill">Own use</span>}
+            </TapToEdit>
+          ) : (
+            <h2>
+              {building.name} <span className="muted small">{building.code}</span>
+              {building.ownUse && <span className="pill muted-pill">Own use</span>}
+            </h2>
+          )}
           <div className="muted small">
-            {counts.total} flat{counts.total === 1 ? '' : 's'}
-            {counts.total - counts.vacant - counts.ownUse > 0 && ` · ${counts.total - counts.vacant - counts.ownUse} occupied`}
+            {floorList.length} floor{floorList.length === 1 ? '' : 's'} · {counts.total} flat{counts.total === 1 ? '' : 's'}
+            {counts.occupied > 0 && ` · ${counts.occupied} occupied`}
             {counts.vacant > 0 && ` · ${counts.vacant} vacant`}
             {counts.ownUse > 0 && ` · ${counts.ownUse} own use`}
             {building.address && ` · ${building.address}`}
           </div>
         </div>
-        {isAdmin && (
-          <div className="member-actions">
-            <button type="button" className="button small-button" onClick={() => setEditing({ type: 'building', id: building.code })}>
-              Edit
-            </button>
-            <button type="button" className="button small-button" onClick={() => setEditing({ type: 'newFlat', id: building.code })}>
-              Add flat
-            </button>
-          </div>
-        )}
       </header>
 
       {editing?.type === 'building' && editing.id === building.code && (
         <BuildingForm initial={building} onSave={(v) => updateBuilding(actor, building, v)} onCancel={() => setEditing(null)} />
       )}
-      {editing?.type === 'newFlat' && editing.id === building.code && (
-        <FlatForm
-          building={building}
-          flats={flats}
-          connections={connections}
-          onSave={(v) => createFlat(actor, { ...v, buildingId: building.code })}
-          onCancel={() => setEditing(null)}
-        />
+
+      {floorList.length === 0 ? (
+        <p className="muted small">No flats yet.</p>
+      ) : (
+        <div className="building-drawing">
+          <div className="roof" aria-hidden="true" />
+          {floorList.map(([floor, list]) => (
+            <div key={floor} className="floor-row">
+              <div className="floor-label">{floorLabel(floor)}</div>
+              <div className="floor-flats">
+                {list.map((f) => (
+                  <FlatBox
+                    key={f.code}
+                    flat={f}
+                    status={occupancy(f, tenancies, today)}
+                    tenantName={tenantNames.get(f.code)}
+                    balance={balances.get(activeTenancy(tenancies, f.code, today)?.id)}
+                    selected={selected === f.code}
+                    dim={Boolean(query) && !flatMatches(f)}
+                    onSelect={() =>
+                      occupancy(f, tenancies, today) === 'vacant' ? navigate(`/flats/${f.code}`) : setSelected(selected === f.code ? null : f.code)
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="ground-line" aria-hidden="true" />
+        </div>
       )}
 
-      {floorList.length === 0 && <p className="muted small">No flats yet.</p>}
-      {floorList.map(([floor, list]) => (
-        <div key={floor} className="floor-group">
-          <h3 className="floor-title">{floor} floor</h3>
-          <ul className="flat-list">
-            {list.map((f) =>
-              editing?.type === 'flat' && editing.id === f.code ? (
-                <li key={f.code}>
-                  <FlatForm
-                    building={building}
-                    flat={f}
-                    flats={flats}
-                    connections={connections}
-                    onSave={(v) => updateFlat(actor, f, v)}
-                    onCancel={() => setEditing(null)}
-                  />
-                </li>
-              ) : (
-                <FlatRow
-                  key={f.code}
-                  flat={f}
-                  connection={byCa.get(f.connectionId)}
-                  status={occupancy(f, tenancies, today)}
-                  tenantName={tenantNames.get(f.code)}
-                  isAdmin={isAdmin}
-                  onEdit={() => setEditing({ type: 'flat', id: f.code })}
-                />
-              ),
-            )}
-          </ul>
-        </div>
-      ))}
+      {selectedFlat && (
+        <FlatPanel
+          building={building}
+          flat={selectedFlat}
+          connection={byCa.get(selectedFlat.connectionId)}
+          tenancies={tenancies}
+          tenants={tenants}
+          balances={balances}
+          today={today}
+          isAdmin={isAdmin}
+          editing={editing}
+          setEditing={setEditing}
+          flats={flats}
+          connections={connections}
+          actor={actor}
+        />
+      )}
     </section>
   )
 }
@@ -158,9 +232,13 @@ export default function FlatsPage() {
   const { user, isAdmin } = useAuth()
   const { buildings, flats, connections, error, loading: propertyLoading } = usePropertyData()
   const { tenants, tenancies, loading: tenancyLoading } = useTenancyData()
-  const loading = propertyLoading || tenancyLoading
+  const { charges, payments, loading: collectionLoading } = useCollectionData()
+  const loading = propertyLoading || tenancyLoading || collectionLoading
+  const [params] = useSearchParams()
+  const focusBuilding = params.get('building')
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState(null) // { type: 'building'|'newBuilding'|'newFlat'|'flat', id }
+  const [selected, setSelected] = useState(null) // flat code
   const today = todayInKolkata()
 
   const grouped = useMemo(() => {
@@ -181,6 +259,18 @@ export default function FlatsPage() {
     return names
   }, [tenants, tenancies, today])
 
+  // Rent and electricity still owed, per tenancy.
+  const balances = useMemo(() => {
+    const map = new Map()
+    if (loading) return map
+    for (const t of tenancies) map.set(t.id, collectionRow(t, charges, payments, today))
+    return map
+  }, [tenancies, charges, payments, today, loading])
+
+  useEffect(() => {
+    if (!loading && focusBuilding) document.getElementById(`b-${focusBuilding}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [loading, focusBuilding])
+
   const q = query.trim().toLowerCase()
   const totals = loading
     ? null
@@ -197,9 +287,14 @@ export default function FlatsPage() {
       <div className="page-header">
         <h1>Buildings and flats</h1>
         {isAdmin && (
-          <button type="button" className="button primary" onClick={() => setEditing({ type: 'newBuilding' })}>
-            Add building
-          </button>
+          <div className="inline-actions">
+            <button type="button" className="button primary" onClick={() => setEditing({ type: 'newFlat' })}>
+              + Add flat
+            </button>
+            <button type="button" className="button" onClick={() => setEditing({ type: 'newBuilding' })}>
+              + Add building
+            </button>
+          </div>
         )}
       </div>
 
@@ -212,8 +307,18 @@ export default function FlatsPage() {
         </p>
       )}
 
-      {editing?.type === 'newBuilding' && (
-        <BuildingForm onSave={(v) => createBuilding(user, v)} onCancel={() => setEditing(null)} />
+      {totals && (
+        <div className="legend small" aria-label="Colours">
+          <span className="legend-item occupied">Occupied</span>
+          <span className="legend-item vacant">Vacant</span>
+          <span className="legend-item own-use">Own use</span>
+          <span className="muted">Tap a flat: occupied shows its tenant and timeline, vacant opens Add tenant.</span>
+        </div>
+      )}
+
+      {editing?.type === 'newBuilding' && <BuildingForm onSave={(v) => createBuilding(user, v)} onCancel={() => setEditing(null)} />}
+      {editing?.type === 'newFlat' && (
+        <AddFlatAnywhere buildings={grouped} connections={connections} actor={user} onDone={() => setEditing(null)} />
       )}
 
       {!loading && buildings.length > 0 && (
@@ -241,24 +346,27 @@ export default function FlatsPage() {
         </div>
       )}
 
-      {grouped.map(({ building, flats: list }) => (
-        <BuildingCard
-          key={building.code}
-          building={building}
-          flats={list}
-          connections={connections}
-          tenancies={tenancies}
-          tenantNames={tenantNames}
-          isAdmin={isAdmin}
-          today={today}
-          query={q}
-          editing={editing}
-          setEditing={setEditing}
-          actor={user}
-        />
-      ))}
-
-      {!loading && <p className="muted small">Tap a flat to see its tenant, add a tenant or record a move-out.</p>}
+      {!loading &&
+        grouped.map(({ building, flats: list }) => (
+          <BuildingCard
+            key={building.code}
+            building={building}
+            flats={list}
+            connections={connections}
+            tenancies={tenancies}
+            tenants={tenants}
+            tenantNames={tenantNames}
+            balances={balances}
+            isAdmin={isAdmin}
+            today={today}
+            query={q}
+            editing={editing}
+            setEditing={setEditing}
+            actor={user}
+            selected={selected}
+            setSelected={setSelected}
+          />
+        ))}
     </section>
   )
 }

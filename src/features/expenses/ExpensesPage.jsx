@@ -59,9 +59,6 @@ function EditExpense({ expense, categories, actor, onDone }) {
       <Field label="Description">
         <input maxLength={200} {...bind('description')} />
       </Field>
-      <Field label="Notes">
-        <input maxLength={500} {...bind('notes')} />
-      </Field>
       <div className="form-actions">
         <button type="button" className="button primary" onClick={save}>
           Save
@@ -112,6 +109,7 @@ export default function ExpensesPage() {
   const [adding, setAdding] = useState(false)
   const [message, setMessage] = useState(null)
   const [panel, setPanel] = useState(null) // { id, mode: 'edit' | 'void' | 'split' }
+  const [openRow, setOpenRow] = useState(null) // expense whose Split/Edit/Void buttons are shown
   const [filters, setFilters] = useState({ month: today.slice(0, 7), buildingId: '', categoryId: '', showVoided: false })
 
   if (error) return <p className="error">{error}</p>
@@ -151,7 +149,7 @@ export default function ExpensesPage() {
           categories={categories}
           onDone={(saved) => {
             setAdding(false)
-            if (saved) setMessage(`Saved ${formatINR(saved.amount)} — ${saved.description}.`)
+            if (saved) setMessage(`Saved ${formatINR(saved.amount)}${saved.description ? ` — ${saved.description}` : ''}.`)
           }}
         />
       )}
@@ -216,34 +214,35 @@ export default function ExpensesPage() {
       <ul className="member-list">
         {list.map((x) => (
           <li key={x.id} className={x.deleted ? 'inactive' : ''}>
-            <div className="member-main">
-              <strong>{formatINR(x.amount)}</strong> · {x.description}
+            <button type="button" className="member-main row-tap" aria-expanded={openRow === x.id} onClick={() => setOpenRow(openRow === x.id ? null : x.id)}>
+              <strong>{formatINR(x.amount)}</strong> · {x.description || categoryName(x.categoryId)}
               <span className={x.payer === 'owner' ? 'pill' : 'pill muted-pill'}>{x.payer === 'owner' ? 'Family-paid' : 'Tenant-paid'}</span>
               {x.deleted && <span className="pill off">Voided</span>}
               <div className="muted small">
                 {x.date} · {categoryName(x.categoryId)} · {buildingName(x.buildingId)}
                 {x.flatId ? ` · flat ${x.flatId}` : ` · whole building (${Object.keys(x.shares ?? {}).length} flats)`} · {methodLabel(x.paymentMode)}
                 {x.deleted && ` · voided: ${x.deleteReason}`}
-                {x.notes && ` · ${x.notes}`}
               </div>
-            </div>
-            <div className="member-actions">
-              {!x.flatId && (
-                <button type="button" className="button small-button" onClick={() => setPanel(panel?.id === x.id && panel.mode === 'split' ? null : { id: x.id, mode: 'split' })}>
-                  Split
-                </button>
-              )}
-              {!x.deleted && (
-                <button type="button" className="button small-button" onClick={() => setPanel({ id: x.id, mode: 'edit' })}>
-                  Edit
-                </button>
-              )}
-              {isAdmin && (
-                <button type="button" className="button small-button" onClick={() => setPanel({ id: x.id, mode: 'void' })}>
-                  {x.deleted ? 'Restore' : 'Void'}
-                </button>
-              )}
-            </div>
+            </button>
+            {(openRow === x.id || panel?.id === x.id) && (
+              <div className="member-actions">
+                {!x.flatId && (
+                  <button type="button" className="button small-button" onClick={() => setPanel(panel?.id === x.id && panel.mode === 'split' ? null : { id: x.id, mode: 'split' })}>
+                    Split
+                  </button>
+                )}
+                {!x.deleted && (
+                  <button type="button" className="button small-button" onClick={() => setPanel({ id: x.id, mode: 'edit' })}>
+                    Edit
+                  </button>
+                )}
+                {isAdmin && (
+                  <button type="button" className="button small-button" onClick={() => setPanel({ id: x.id, mode: 'void' })}>
+                    {x.deleted ? 'Restore' : 'Void'}
+                  </button>
+                )}
+              </div>
+            )}
             {panel?.id === x.id && panel.mode === 'split' && (
               <p className="muted small full-row">
                 Stored split:{' '}

@@ -361,3 +361,8 @@ export function sortFlats(flats) {
       String(a.position).localeCompare(String(b.position), undefined, { numeric: true }),
   )
 }
+
+/** Short connection type label: "Com" for commercial, "Dom" for domestic. */
+export function connectionTypeLabel(type) {
+  return type === 'commercial' ? 'Com' : 'Dom'
+}

@@ -108,6 +108,21 @@ export async function recordPayment(actor, { id, tenancy, account = 'rent', amou
   }
 }
 
+export const UNDO_REASON = 'Undone right after saving'
+
+/** Cancels a payment the same person saved moments ago ("Undo"). Kept in the ledger as voided. */
+export async function undoPayment(actor, paymentId) {
+  const batch = writeBatch(db)
+  batch.update(doc(db, 'payments', paymentId), {
+    deleted: true,
+    deletedBy: email(actor),
+    deletedAt: serverTimestamp(),
+    deleteReason: UNDO_REASON,
+  })
+  addAuditEntry(batch, actor, { action: 'undo', entity: 'payment', entityId: paymentId, after: { deleted: true, reason: UNDO_REASON } })
+  await batch.commit()
+}
+
 /** Admin only: voids (or restores) a payment, charge, expense or bill with a reason. Nothing is deleted. */
 export async function setVoided(actor, collectionName, record, voided, reason) {
   if (!reason?.trim()) throw new Error('Give a reason.')
